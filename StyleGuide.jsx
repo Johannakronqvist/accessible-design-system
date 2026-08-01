@@ -125,8 +125,8 @@ export default function StyleGuide() {
 
   useEffect(() => {
     const href =
-      "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500" +
-      "&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap";
+      "https://fonts.googleapis.com/css2?family=Open+Sans:wght@400..700" +
+      "&family=Playfair+Display:wght@400..700&display=swap";
     if (!document.querySelector(`link[href="${href}"]`)) {
       const l = document.createElement("link");
       l.rel = "stylesheet";

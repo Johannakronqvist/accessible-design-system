@@ -12,7 +12,10 @@
 export const PRESETS = {
   sweet: {
     name: "Sweet Rosewood",
-    fonts: { display: "'Fraunces', serif", body: "'Figtree', sans-serif" },
+    // Both faces are variable across 400..700, so every weight the components
+    // author — the 500 on labels and buttons, the 600 on alert headings and
+    // legends — resolves exactly rather than rounding to a neighbouring cut.
+    fonts: { display: "'Playfair Display', serif", body: "'Open Sans', sans-serif" },
     light: {
       "--bg": "#FCF8F5", "--surface": "#FFFFFF", "--text-1": "#2A2320",
       "--text-2": "#6C625D", "--border": "#EFE6DF", "--border-interactive": "#8E8880", "--radius": "10px",
