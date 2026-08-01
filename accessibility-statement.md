@@ -34,6 +34,12 @@ the design system and summarised here: colour contrast (1.4.3), non-text contras
 (2.5.8), keyboard operation (2.1.1), visible focus (2.4.7), and programmatic
 name/role/value (4.1.2) are handled at the component level.
 
+Form controls additionally cover the WCAG 2.2 additions: every control that can be
+dragged has an equivalent single-pointer and keyboard path (2.5.7), authentication
+does not block pasting or password managers and allows the entered password to be
+revealed (3.3.8), and information already provided in a flow can be reused rather
+than re-entered (3.3.7).
+
 ## Known limitations
 
 Despite our efforts, some content may not yet be fully accessible:

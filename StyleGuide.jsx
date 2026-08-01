@@ -31,6 +31,13 @@ import { PRESETS, BADGE_TONES, ALERT_TONES, BREAKPOINTS } from "./tokens";
 import { contrast, hexToRgb, ratioTag, deriveAccent } from "./color";
 import { Button, BUTTON_CSS } from "./Button";
 import { Field, FIELD_CSS } from "./Field";
+import { Textarea, TEXTAREA_CSS } from "./Textarea";
+import { SearchField, SEARCH_CSS } from "./SearchField";
+import { PasswordField, PASSWORD_CSS } from "./PasswordField";
+import { Slider, SLIDER_CSS } from "./Slider";
+import { FileUpload, FILEUPLOAD_CSS } from "./FileUpload";
+import { NumberStepper, NUMBER_CSS } from "./NumberStepper";
+import { FormGroup, FORMGROUP_CSS } from "./FormGroup";
 import { Select, SELECT_CSS } from "./Select";
 import { Checkbox, RadioGroup, Switch, SEL_CSS } from "./SelectionControls";
 import { Badge, TagDemo, BADGE_CSS } from "./Badge";
@@ -172,7 +179,8 @@ export default function StyleGuide() {
 
   return (
     <div className="ds" style={vars}>
-      <style>{GUIDE_CSS + BUTTON_CSS + FIELD_CSS + RESPONSIVE_CSS + CONF_CSS + SEL_CSS + SELECT_CSS + BADGE_CSS + ALERT_CSS}</style>
+      <style>{GUIDE_CSS + BUTTON_CSS + FIELD_CSS + RESPONSIVE_CSS + CONF_CSS + SEL_CSS + SELECT_CSS + BADGE_CSS + ALERT_CSS
+        + TEXTAREA_CSS + SEARCH_CSS + PASSWORD_CSS + SLIDER_CSS + FILEUPLOAD_CSS + NUMBER_CSS + FORMGROUP_CSS}</style>
       <div className="ds-wrap">
 
         {/* Header */}
@@ -401,6 +409,160 @@ export default function StyleGuide() {
               Label, hint and error are wired through aria-describedby and aria-invalid; the error
               carries an icon and message, never color alone (1.4.1); required is announced to
               assistive tech; the border meets 3:1 and the field is a 44px touch target. Tab through to try.
+            </p>
+          </div>
+        </div>
+
+        {/* Textarea */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Textarea</div>
+          <div className="ds-card">
+            <div style={{ display: "grid", gap: 22, gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))" }}>
+              <Textarea label="Release notes" placeholder="What changed in this version?"
+                hint="Keep it short — this appears in the changelog." />
+              <Textarea label="Short bio" maxLength={120} showCount enforceMax={false}
+                hint="Type past the limit to see it flagged rather than truncated."
+                defaultValue="Design engineer working on accessible interfaces." />
+            </div>
+            <p className="ds-hint">
+              The Field shell applied to a multi-line input. The counter is described to the field, so focusing
+              it announces the budget, and a separate polite region only speaks in the last 20 characters —
+              typing is never narrated keystroke by keystroke. With enforceMax=false the limit is advisory:
+              going over sets aria-invalid and shows the error instead of silently truncating pasted text.
+            </p>
+          </div>
+        </div>
+
+        {/* Search field */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Search field</div>
+          <div className="ds-card">
+            <div style={{ display: "grid", gap: 22, gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))" }}>
+              <SearchField label="Search components" placeholder="Try “button”"
+                hint="Enter searches, Escape clears." />
+              <SearchField label="Search team" defaultValue="jane" resultCount={3} />
+            </div>
+            <p className="ds-hint">
+              A labelled input inside a role=search landmark. The clear button only exists when there is
+              something to clear, carries a label, and returns focus to the input — the browser's own WebKit
+              clear affordance is hidden because it can't be reached by keyboard. Pass resultCount for a polite
+              status region that announces how many results came back without moving focus.
+            </p>
+          </div>
+        </div>
+
+        {/* Password field */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Password field</div>
+          <div className="ds-card">
+            <div style={{ display: "grid", gap: 22, gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))" }}>
+              <PasswordField label="Password" placeholder="Enter your password"
+                hint="Paste works. Nothing here blocks your password manager." />
+              <PasswordField label="New password" autoComplete="new-password" required
+                requirements={[
+                  { label: "At least 12 characters", test: (v) => v.length >= 12 },
+                  { label: "A number", test: (v) => /\d/.test(v) },
+                  { label: "A symbol", test: (v) => /[^A-Za-z0-9]/.test(v) },
+                ]} />
+            </div>
+            <p className="ds-hint">
+              Built for 3.3.8 Accessible Authentication, which most password fields fail: paste is never
+              intercepted, autoComplete is set so managers can fill and save, and the reveal toggle lets people
+              verify what they typed rather than rely on memory. The toggle is a button with aria-pressed; each
+              requirement pairs an icon with text so the met state never rests on color, and a polite summary
+              reports progress instead of re-reading the whole list on every keystroke.
+            </p>
+          </div>
+        </div>
+
+        {/* Slider */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Slider</div>
+          <div className="ds-card">
+            <div style={{ display: "grid", gap: 30, gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))" }}>
+              <Slider label="Monthly budget" min={0} max={200} step={10} defaultValue={80}
+                formatValue={(v) => `$${v}`} marks={[0, 100, 200]} />
+              <Slider label="Density" min={1} max={4} step={1} defaultValue={2}
+                formatValue={(v) => ["Compact", "Cozy", "Comfortable", "Spacious"][v - 1]}
+                marks={[{ value: 1, label: "Compact" }, { value: 4, label: "Spacious" }]} />
+            </div>
+            <p className="ds-hint">
+              A native input[type=range], which is the whole accessibility argument: arrows, Home / End and
+              Page Up / Down move it, and a click anywhere on the track jumps to that value — so nothing here
+              requires a drag (2.5.7) or a path-based gesture (2.5.1). formatValue feeds aria-valuetext, so
+              Density announces “Comfortable” rather than “3”. The thumb is a 24px target and the filled track
+              meets 3:1 against the empty one.
+            </p>
+          </div>
+        </div>
+
+        {/* File upload */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">File upload</div>
+          <div className="ds-card">
+            <FileUpload label="Attachments" multiple accept=".pdf,.png,.jpg" maxSizeMB={5}
+              hint="PDF, PNG or JPG up to 5 MB." />
+            <p className="ds-hint">
+              Drag and drop is an enhancement here, never the only way in. The primary control is a real file
+              input paired with a label, so the same action works by keyboard, click and touch with no dragging
+              at all (2.5.7) — the input stays in the tab order and draws its focus ring on the label. Chosen
+              files are text with a labelled remove button each, and a polite region reports what was added,
+              rejected or removed, so the outcome of a drop is never carried by the visual list alone.
+            </p>
+          </div>
+        </div>
+
+        {/* Number stepper */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Number stepper</div>
+          <div className="ds-card">
+            <div style={{ display: "grid", gap: 22, gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))" }}>
+              <NumberStepper label="Seats" min={1} max={50} defaultValue={5} hint="Between 1 and 50." />
+              <NumberStepper label="Hours per day" min={0} max={24} step={0.5} defaultValue={8} />
+              <NumberStepper label="Locked" defaultValue={1} disabled />
+            </div>
+            <p className="ds-hint">
+              A native input[type=number], so assistive tech gets the spinbutton role, min / max / step and
+              value announcements for free. The − and + buttons are the pointer and touch addition — 44px each,
+              labelled with what they change rather than a bare symbol. At the bounds they report aria-disabled
+              instead of taking the disabled attribute, so pressing + up to the maximum announces the state
+              without dropping your focus onto the body. Typing is left alone while the field has focus and
+              clamped on blur, so entering “12” in a field with a minimum of 5 isn't a fight with the clamp.
+            </p>
+          </div>
+        </div>
+
+        {/* Form group */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Form group</div>
+          <div className="ds-card">
+            <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))" }}>
+              <FormGroup legend="Shipping address" variant="card" hint="Where the order should go.">
+                <Field label="Street" defaultValue="12 Rosewood Lane" />
+                <Field label="City" defaultValue="Helsinki" />
+              </FormGroup>
+              <FormGroup legend="Billing address" variant="card"
+                sameAs={{
+                  label: "Same as shipping address", defaultChecked: true,
+                  summary: <>12 Rosewood Lane<br />Helsinki</>,
+                }}>
+                <Field label="Street" />
+                <Field label="City" />
+              </FormGroup>
+            </div>
+            <p className="ds-hint">
+              A fieldset with a legend, so related controls are announced as one named group and the hint is
+              read once for the group instead of repeated on every field. The sameAs slot is the 3.3.7
+              Redundant Entry answer: when the information was already given, offer it back rather than ask
+              again — unchecking it restores the fields, checking it unmounts them so they leave the tab order
+              entirely, and the change is announced politely.
             </p>
           </div>
         </div>

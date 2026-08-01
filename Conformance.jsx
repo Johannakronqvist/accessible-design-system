@@ -46,6 +46,74 @@ export const CONFORMANCE = [
     ],
   },
   {
+    area: "Textarea",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "label/for plus aria-describedby wires the hint, counter and error"],
+      ["4.1.3", "Status Messages", "AA", "ok", "The counter is a polite status region that only speaks near the limit"],
+      ["3.3.1", "Error Identification", "A", "ok", "Overflowing a soft limit sets aria-invalid and shows an icon + message"],
+      ["1.4.12", "Text Spacing", "AA", "ok", "min-height and vertical resize; never a fixed-height text container"],
+    ],
+  },
+  {
+    area: "Search field",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "Wrapped in a role=search landmark around a labelled input"],
+      ["2.1.1", "Keyboard", "A", "ok", "Enter searches, Escape clears; the browser's unreachable clear button is replaced"],
+      ["4.1.2", "Name, Role, Value", "A", "ok", "The clear control is a button with an aria-label; focus returns to the input"],
+      ["4.1.3", "Status Messages", "AA", "ok", "Result counts announced politely without moving focus"],
+    ],
+  },
+  {
+    area: "Password field",
+    rows: [
+      ["3.3.8", "Accessible Authentication (Minimum)", "AA", "ok", "Paste is never blocked, autocomplete is set, and a reveal toggle allows verification"],
+      ["4.1.2", "Name, Role, Value", "A", "ok", "The reveal toggle is a button with aria-pressed and an action label"],
+      ["3.3.2", "Labels or Instructions", "A", "ok", "Requirements are stated up front and described to the input"],
+      ["1.4.1", "Use of Color", "A", "ok", "Each requirement pairs an icon and text with its met state"],
+      ["4.1.3", "Status Messages", "AA", "ok", "A polite summary reports how many rules are met"],
+    ],
+  },
+  {
+    area: "Slider (range)",
+    rows: [
+      ["2.5.7", "Dragging Movements", "AA", "ok", "Native range: arrows, Home/End, Page Up/Down and track clicks — no drag required"],
+      ["2.5.1", "Pointer Gestures", "A", "ok", "Single-pointer operation; no path-based gesture"],
+      ["4.1.2", "Name, Role, Value", "A", "ok", "Native slider role with min, max, step and aria-valuetext"],
+      ["2.5.8", "Target Size (Minimum)", "AA", "ok", "24px thumb"],
+      ["1.4.11", "Non-text Contrast", "AA", "ok", "Filled track, empty track and thumb border verified ≥3:1"],
+    ],
+  },
+  {
+    area: "File upload",
+    rows: [
+      ["2.5.7", "Dragging Movements", "AA", "ok", "Drag and drop is an enhancement; the file input and its label do the same job"],
+      ["2.1.1", "Keyboard", "A", "ok", "The input stays in the tab order and is activated from its label"],
+      ["2.4.7", "Focus Visible", "AA", "ok", "The visually hidden input draws its focus ring on the label"],
+      ["2.5.3", "Label in Name", "A", "ok", "The input is named after the field and the visible button text"],
+      ["3.3.1", "Error Identification", "A", "ok", "Type and size rejections surface as a role=alert message"],
+      ["4.1.3", "Status Messages", "AA", "ok", "Added, rejected and removed files are announced politely"],
+    ],
+  },
+  {
+    area: "Number stepper",
+    rows: [
+      ["4.1.2", "Name, Role, Value", "A", "ok", "Native spinbutton semantics with min, max and step"],
+      ["2.1.1", "Keyboard", "A", "ok", "Arrow keys and typing; the value clamps on blur, not mid-keystroke"],
+      ["2.4.3", "Focus Order", "A", "ok", "At the bounds buttons use aria-disabled, so focus is never dropped mid-interaction"],
+      ["3.3.2", "Labels or Instructions", "A", "ok", "The − and + buttons name what they change, not just a symbol"],
+      ["2.5.8", "Target Size (Minimum)", "AA", "ok", "44px decrement and increment targets"],
+    ],
+  },
+  {
+    area: "Form group (fieldset)",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "fieldset + legend group the controls; hint and error describe the group once"],
+      ["3.3.7", "Redundant Entry", "A", "ok", "The sameAs slot offers previously entered information instead of asking for it again"],
+      ["3.3.2", "Labels or Instructions", "A", "ok", "Group-level legend plus an optional hint slot"],
+      ["4.1.3", "Status Messages", "AA", "ok", "Collapsing the group to a summary is announced politely"],
+    ],
+  },
+  {
     area: "Selection controls (checkbox, radio, switch)",
     rows: [
       ["1.3.1", "Info and Relationships", "A", "ok", "Native inputs; radios grouped in a fieldset with a legend"],
@@ -142,5 +210,4 @@ export const CONF_CSS = `
 .ds-table th{color:var(--text-2);font-weight:500}
 .ds-crit{font-family:ui-monospace,monospace;white-space:nowrap;color:var(--text-1)}
 .ds-badge{display:inline-block;font-size:11px;font-weight:500;padding:1px 8px;border-radius:6px;white-space:nowrap}
-.ds-textarea{min-height:96px;resize:vertical;line-height:1.5;padding:10px 14px}
 `;

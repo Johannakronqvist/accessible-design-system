@@ -9,14 +9,14 @@
 import { useState, useEffect, useRef } from "react";
 import { nextId } from "./id";
 
-export function Checkbox({ label, defaultChecked = false, indeterminate = false, disabled = false }) {
+export function Checkbox({ label, defaultChecked = false, indeterminate = false, disabled = false, onChange }) {
   const [on, setOn] = useState(defaultChecked);
   const ref = useRef(null);
   useEffect(() => { if (ref.current) ref.current.indeterminate = indeterminate && !on; }, [indeterminate, on]);
   return (
     <label className={`ds-check${disabled ? " disabled" : ""}`}>
       <input ref={ref} type="checkbox" className="ds-sel-input" checked={on} disabled={disabled}
-        onChange={(e) => setOn(e.target.checked)} />
+        onChange={(e) => { setOn(e.target.checked); onChange?.(e.target.checked); }} />
       <span className="ds-check-box" aria-hidden="true" />
       <span>{label}</span>
     </label>

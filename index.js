@@ -10,6 +10,13 @@ export { default } from "./StyleGuide";
 
 export { Button } from "./Button";
 export { Field } from "./Field";
+export { Textarea } from "./Textarea";
+export { SearchField } from "./SearchField";
+export { PasswordField } from "./PasswordField";
+export { Slider } from "./Slider";
+export { FileUpload } from "./FileUpload";
+export { NumberStepper } from "./NumberStepper";
+export { FormGroup } from "./FormGroup";
 export { Select } from "./Select";
 export { Checkbox, RadioGroup, Switch } from "./SelectionControls";
 export { Badge } from "./Badge";
