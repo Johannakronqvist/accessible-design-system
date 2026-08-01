@@ -136,6 +136,60 @@ export const CONFORMANCE = [
     ],
   },
   {
+    area: "Link",
+    rows: [
+      ["1.4.1", "Use of Color", "A", "ok", "Underlined by default, so a link in prose is never colour alone"],
+      ["2.4.4", "Link Purpose (In Context)", "A", "partial", "Component renders the text; writing it meaningfully is yours"],
+      ["3.2.5", "Change on Request", "AAA", "ok", "external announces the new tab in text and shows an icon"],
+      ["2.4.7", "Focus Visible", "AA", "ok", "Two-colour focus ring via :focus-visible"],
+    ],
+  },
+  {
+    area: "Skip link",
+    rows: [
+      ["2.4.1", "Bypass Blocks", "A", "ok", "First stop in the tab order, jumping past repeated navigation"],
+      ["2.4.7", "Focus Visible", "AA", "ok", "Hidden with transform, so it stays focusable and appears on focus"],
+      ["2.4.11", "Focus Not Obscured (Minimum)", "AA", "ok", "Fixed at z-index 100, above sticky page chrome"],
+    ],
+  },
+  {
+    area: "Breadcrumbs",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "An ordered list inside a labelled nav landmark"],
+      ["2.4.8", "Location", "AAA", "ok", "The trail states where the page sits; the last item is aria-current=page"],
+      ["4.1.2", "Name, Role, Value", "A", "ok", "Current page is text with aria-current, not a link to itself"],
+      ["1.4.10", "Reflow", "AA", "ok", "The trail wraps instead of scrolling sideways"],
+    ],
+  },
+  {
+    area: "Pagination",
+    rows: [
+      ["4.1.2", "Name, Role, Value", "A", "ok", "Numbered buttons are labelled “Page 3”, not a bare digit"],
+      ["1.4.1", "Use of Color", "A", "ok", "Current page pairs its tint with a weight step, plus aria-current"],
+      ["2.4.3", "Focus Order", "A", "ok", "Ends use aria-disabled, so paging never drops focus onto the body"],
+      ["2.5.8", "Target Size (Minimum)", "AA", "ok", "32px page targets, raised to 44px on coarse pointers"],
+    ],
+  },
+  {
+    area: "Tabs",
+    rows: [
+      ["4.1.2", "Name, Role, Value", "A", "ok", "tablist / tab / tabpanel with aria-selected and aria-controls"],
+      ["2.1.1", "Keyboard", "A", "ok", "Arrows, Home / End; a roving tabindex keeps the list to one tab stop"],
+      ["3.2.2", "On Input", "A", "ok", "activation=manual moves focus without selecting, for panels that load"],
+      ["1.4.1", "Use of Color", "A", "ok", "Selected shows an indicator bar and weight change, not just colour"],
+      ["2.4.7", "Focus Visible", "AA", "ok", "Ring on the tab, and on the panel when it takes focus"],
+    ],
+  },
+  {
+    area: "Accordion",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "Each trigger sits in a heading at a caller-chosen level"],
+      ["4.1.2", "Name, Role, Value", "A", "ok", "aria-expanded on the button; the panel is a region it labels"],
+      ["2.1.1", "Keyboard", "A", "ok", "Native buttons, operated with Enter and Space"],
+      ["1.4.1", "Use of Color", "A", "ok", "Open state shown by chevron rotation as well as colour"],
+    ],
+  },
+  {
     area: "Badge / Tag",
     rows: [
       ["1.4.3", "Contrast (Minimum)", "AA", "ok", "Soft and solid tones verified ≥4.5:1 in light and dark"],

@@ -21,6 +21,11 @@ import { NumberStepper } from "../NumberStepper";
 import { FormGroup } from "../FormGroup";
 import { Field } from "../Field";
 import { Select } from "../Select";
+import { Link } from "../Link";
+import { Breadcrumbs } from "../Breadcrumbs";
+import { Pagination, pageList } from "../Pagination";
+import { Tabs } from "../Tabs";
+import { Accordion } from "../Accordion";
 
 /* ------------------------------------------------------------ Select */
 
@@ -416,5 +421,254 @@ describe("FormGroup — 3.3.7 Redundant Entry, 1.3.1 Info and Relationships", ()
     const fieldset = screen.getByRole("group", { name: /Shipping address/ });
     expect(fieldset.tagName).toBe("FIELDSET");
     expect(fieldset).toHaveAccessibleDescription("Where the order should go.");
+  });
+});
+
+/* ------------------------------------------------------------ Link */
+
+describe("Link — 1.4.1 Use of Color, 3.2.5 Change on Request", () => {
+  test("is underlined by default, so prose links are not colour alone", () => {
+    render(<Link href="#a">Read more</Link>);
+    expect(screen.getByRole("link")).not.toHaveClass("hover-only");
+  });
+
+  test("underline='hover' opts out, for places position already distinguishes", () => {
+    render(<Link href="#a" underline="hover">Read more</Link>);
+    expect(screen.getByRole("link")).toHaveClass("hover-only");
+  });
+
+  test("external announces the new tab in text and hardens rel", () => {
+    render(<Link href="https://example.com" external>Docs</Link>);
+    const link = screen.getByRole("link");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    // The warning is real text, not a title attribute, so it is announced.
+    expect(link).toHaveAccessibleName("Docs (opens in a new tab)");
+  });
+
+  test("a plain link carries no target and no warning", () => {
+    render(<Link href="#a">Docs</Link>);
+    const link = screen.getByRole("link");
+    expect(link).not.toHaveAttribute("target");
+    expect(link).toHaveAccessibleName("Docs");
+  });
+});
+
+/* ------------------------------------------------------------ Breadcrumbs */
+
+describe("Breadcrumbs — 1.3.1 Info and Relationships, 2.4.8 Location", () => {
+  const trail = [
+    { label: "Home", href: "#home" },
+    { label: "Components", href: "#components" },
+    { label: "Breadcrumbs" },
+  ];
+
+  test("is an ordered list inside a named nav landmark", () => {
+    render(<Breadcrumbs items={trail} />);
+    const nav = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(within(nav).getByRole("list").tagName).toBe("OL");
+    expect(within(nav).getAllByRole("listitem")).toHaveLength(3);
+  });
+
+  test("the current page is text with aria-current, not a link to itself", () => {
+    render(<Breadcrumbs items={trail} />);
+    expect(screen.getAllByRole("link")).toHaveLength(2); // not 3
+    const current = screen.getByText("Breadcrumbs");
+    expect(current).toHaveAttribute("aria-current", "page");
+    expect(current.tagName).not.toBe("A");
+  });
+});
+
+/* ------------------------------------------------------------ Pagination */
+
+describe("Pagination — 4.1.2 Name Role Value, 2.4.3 Focus Order", () => {
+  test("numbered buttons are named 'Page n', not a bare digit", () => {
+    render(<Pagination count={5} defaultPage={2} />);
+    expect(screen.getByRole("button", { name: "Page 3" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Previous page" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Next page" })).toBeInTheDocument();
+  });
+
+  test("the current page carries aria-current and moves as you page", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<Pagination count={5} defaultPage={2} onChange={onChange} />);
+    const start = screen.getByRole("button", { name: "Page 2" });
+    expect(start).toHaveAttribute("aria-current", "page");
+    // .current carries the weight step that keeps the marker off colour alone;
+    // the rendered weight itself is a manual check, since jsdom applies no CSS.
+    expect(start).toHaveClass("current");
+
+    await user.click(screen.getByRole("button", { name: "Page 4" }));
+    expect(screen.getByRole("button", { name: "Page 4" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("button", { name: "Page 2" })).not.toHaveAttribute("aria-current");
+    expect(onChange).toHaveBeenCalledWith(4);
+  });
+
+  test("Previous and Next step one page at a time", async () => {
+    const user = userEvent.setup();
+    render(<Pagination count={5} defaultPage={3} />);
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+    expect(screen.getByRole("button", { name: "Page 4" })).toHaveAttribute("aria-current", "page");
+    await user.click(screen.getByRole("button", { name: "Previous page" }));
+    expect(screen.getByRole("button", { name: "Page 3" })).toHaveAttribute("aria-current", "page");
+  });
+
+  test("at an end the edge button reports aria-disabled but stays focusable", async () => {
+    const user = userEvent.setup();
+    render(<Pagination count={5} defaultPage={5} />);
+    const next = screen.getByRole("button", { name: "Next page" });
+
+    expect(next).toHaveAttribute("aria-disabled", "true");
+    expect(next).not.toBeDisabled(); // focus is never dropped
+    next.focus();
+    expect(next).toHaveFocus();
+
+    await user.click(next);
+    expect(screen.getByRole("button", { name: "Page 5" })).toHaveAttribute("aria-current", "page");
+  });
+
+  test("pageList collapses long runs but always keeps the ends", () => {
+    expect(pageList(1, 5, 1)).toEqual([1, 2, 3, 4, 5]);
+    const long = pageList(12, 24, 1);
+    expect(long[0]).toBe(1);
+    expect(long[long.length - 1]).toBe(24);
+    expect(long).toContain("start-gap");
+    expect(long).toContain("end-gap");
+    expect(long).toContain(12);
+    // No duplicates, and numbers stay ascending.
+    const nums = long.filter((p) => typeof p === "number");
+    expect(new Set(nums).size).toBe(nums.length);
+    expect([...nums].sort((a, b) => a - b)).toEqual(nums);
+  });
+});
+
+/* ------------------------------------------------------------ Tabs */
+
+describe("Tabs — 2.1.1 Keyboard, 3.2.2 On Input, 4.1.2 Name Role Value", () => {
+  const items = [
+    { value: "a", label: "Profile", content: "Profile panel" },
+    { value: "b", label: "Billing", content: "Billing panel" },
+    { value: "c", label: "Team", content: "Team panel" },
+  ];
+
+  test("wires tablist, tabs and the panel together", () => {
+    render(<Tabs label="Settings" items={items} />);
+    const list = screen.getByRole("tablist", { name: "Settings" });
+    expect(within(list).getAllByRole("tab")).toHaveLength(3);
+
+    const selected = screen.getByRole("tab", { selected: true });
+    const panel = screen.getByRole("tabpanel");
+    expect(selected).toHaveAccessibleName("Profile");
+    expect(panel).toHaveAttribute("aria-labelledby", selected.id);
+    expect(selected).toHaveAttribute("aria-controls", panel.id);
+  });
+
+  test("a roving tabindex keeps the tablist to one stop in the tab order", () => {
+    render(<Tabs label="Settings" items={items} />);
+    const tabs = screen.getAllByRole("tab");
+    expect(tabs[0]).toHaveAttribute("tabindex", "0");
+    expect(tabs[1]).toHaveAttribute("tabindex", "-1");
+    expect(tabs[2]).toHaveAttribute("tabindex", "-1");
+  });
+
+  test("automatic activation selects as the arrows move", async () => {
+    const user = userEvent.setup();
+    render(<Tabs label="Settings" items={items} />);
+    screen.getAllByRole("tab")[0].focus();
+
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByRole("tab", { selected: true })).toHaveAccessibleName("Billing");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("Billing panel");
+  });
+
+  test("manual activation moves focus without selecting until Enter", async () => {
+    const user = userEvent.setup();
+    render(<Tabs label="Reports" items={items} activation="manual" />);
+    const tabs = screen.getAllByRole("tab");
+    tabs[0].focus();
+
+    await user.keyboard("{ArrowRight}");
+    expect(tabs[1]).toHaveFocus();
+    expect(screen.getByRole("tab", { selected: true })).toHaveAccessibleName("Profile"); // not yet switched
+
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("tab", { selected: true })).toHaveAccessibleName("Billing");
+  });
+
+  test("arrows wrap, and Home / End jump to the ends", async () => {
+    const user = userEvent.setup();
+    render(<Tabs label="Settings" items={items} />);
+    screen.getAllByRole("tab")[0].focus();
+
+    await user.keyboard("{ArrowLeft}");
+    expect(screen.getByRole("tab", { selected: true })).toHaveAccessibleName("Team"); // wrapped
+
+    await user.keyboard("{Home}");
+    expect(screen.getByRole("tab", { selected: true })).toHaveAccessibleName("Profile");
+    await user.keyboard("{End}");
+    expect(screen.getByRole("tab", { selected: true })).toHaveAccessibleName("Team");
+  });
+
+  test("vertical orientation swaps the arrow axis", async () => {
+    const user = userEvent.setup();
+    render(<Tabs label="Settings" items={items} orientation="vertical" />);
+    expect(screen.getByRole("tablist")).toHaveAttribute("aria-orientation", "vertical");
+    screen.getAllByRole("tab")[0].focus();
+
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("tab", { selected: true })).toHaveAccessibleName("Billing");
+  });
+
+  test("the panel is reachable by keyboard even with nothing focusable inside", () => {
+    render(<Tabs label="Settings" items={items} />);
+    expect(screen.getByRole("tabpanel")).toHaveAttribute("tabindex", "0");
+  });
+});
+
+/* ------------------------------------------------------------ Accordion */
+
+describe("Accordion — 1.3.1 Info and Relationships, 4.1.2 Name Role Value", () => {
+  const items = [
+    { value: "one", label: "First question", content: "First answer" },
+    { value: "two", label: "Second question", content: "Second answer" },
+  ];
+
+  test("each trigger sits in a heading at the level the caller asked for", () => {
+    render(<Accordion items={items} headingLevel={2} />);
+    const headings = screen.getAllByRole("heading", { level: 2 });
+    expect(headings).toHaveLength(2);
+    expect(within(headings[0]).getByRole("button")).toHaveAccessibleName("First question");
+  });
+
+  test("toggling flips aria-expanded and reveals the labelled region", async () => {
+    const user = userEvent.setup();
+    render(<Accordion items={items} />);
+    const trigger = screen.getByRole("button", { name: "First question" });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText("First answer")).not.toBeVisible();
+
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    const region = screen.getByRole("region", { name: "First question" });
+    expect(region).toBeVisible();
+  });
+
+  test("by default opening one closes the other", async () => {
+    const user = userEvent.setup();
+    render(<Accordion items={items} defaultOpen={["one"]} />);
+    await user.click(screen.getByRole("button", { name: "Second question" }));
+
+    expect(screen.getByRole("button", { name: "First question" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("button", { name: "Second question" })).toHaveAttribute("aria-expanded", "true");
+  });
+
+  test("allowMultiple turns them into independent disclosures", async () => {
+    const user = userEvent.setup();
+    render(<Accordion items={items} allowMultiple defaultOpen={["one"]} />);
+    await user.click(screen.getByRole("button", { name: "Second question" }));
+
+    expect(screen.getByRole("button", { name: "First question" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Second question" })).toHaveAttribute("aria-expanded", "true");
   });
 });

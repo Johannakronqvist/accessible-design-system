@@ -38,6 +38,12 @@ import { Slider, SLIDER_CSS } from "./Slider";
 import { FileUpload, FILEUPLOAD_CSS } from "./FileUpload";
 import { NumberStepper, NUMBER_CSS } from "./NumberStepper";
 import { FormGroup, FORMGROUP_CSS } from "./FormGroup";
+import { Link, LINK_CSS } from "./Link";
+import { SkipLink, SKIPLINK_CSS } from "./SkipLink";
+import { Breadcrumbs, BREADCRUMBS_CSS } from "./Breadcrumbs";
+import { Pagination, PAGINATION_CSS } from "./Pagination";
+import { Tabs, TABS_CSS } from "./Tabs";
+import { Accordion, ACCORDION_CSS } from "./Accordion";
 import { Select, SELECT_CSS } from "./Select";
 import { Checkbox, RadioGroup, Switch, SEL_CSS } from "./SelectionControls";
 import { Badge, TagDemo, BADGE_CSS } from "./Badge";
@@ -93,6 +99,11 @@ const GUIDE_CSS = `
 .ds-sprow{display:flex;align-items:center;gap:14px;margin:9px 0}
 .ds-bar{height:22px;border-radius:5px;background:var(--accent-tint);border:.5px solid var(--border)}
 .ds-box{background:var(--accent-tint);border:.5px solid var(--border);border-radius:6px}
+.ds-main{outline:none}
+.ds-main:focus-visible{box-shadow:0 0 0 3px var(--ring);border-radius:min(var(--radius),8px)}
+.ds-kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+  background:var(--surface);border:.5px solid var(--border-interactive);
+  border-radius:4px;padding:1px 5px;color:var(--text-1)}
 `;
 
 /* ------------------------------------------------------------- SHOWCASE */
@@ -180,7 +191,10 @@ export default function StyleGuide() {
   return (
     <div className="ds" style={vars}>
       <style>{GUIDE_CSS + BUTTON_CSS + FIELD_CSS + RESPONSIVE_CSS + CONF_CSS + SEL_CSS + SELECT_CSS + BADGE_CSS + ALERT_CSS
-        + TEXTAREA_CSS + SEARCH_CSS + PASSWORD_CSS + SLIDER_CSS + FILEUPLOAD_CSS + NUMBER_CSS + FORMGROUP_CSS}</style>
+        + TEXTAREA_CSS + SEARCH_CSS + PASSWORD_CSS + SLIDER_CSS + FILEUPLOAD_CSS + NUMBER_CSS + FORMGROUP_CSS
+        + LINK_CSS + SKIPLINK_CSS + BREADCRUMBS_CSS + PAGINATION_CSS + TABS_CSS + ACCORDION_CSS}</style>
+      {/* First stop in the tab order — press Tab on load to reveal it (2.4.1). */}
+      <SkipLink href="#ds-main" />
       <div className="ds-wrap">
 
         {/* Header */}
@@ -200,6 +214,10 @@ export default function StyleGuide() {
             </div>
           </div>
         </div>
+
+        {/* Everything below the header is the skip link's destination.
+            tabIndex={-1} so focus actually lands here, not just the viewport. */}
+        <main id="ds-main" tabIndex={-1} className="ds-main">
 
         {/* Theme controls */}
         <div className="ds-section">
@@ -350,7 +368,10 @@ export default function StyleGuide() {
               </div>
             ))}
             <div className="ds-label" style={{ margin: "22px 0 12px" }}>Applied — gap and padding</div>
-            <div style={{ display: "flex", gap: "var(--space-3)", padding: "var(--space-4)", background: "var(--bg)", border: ".5px solid var(--border)", borderRadius: "var(--radius)" }}>
+            {/* Clamped for the same reason as the Grid demo below: a container is
+                not a control, so it softens with the shape token without ever
+                becoming a lozenge. */}
+            <div style={{ display: "flex", gap: "var(--space-3)", padding: "var(--space-4)", background: "var(--bg)", border: ".5px solid var(--border)", borderRadius: "min(var(--radius), 10px)" }}>
               <div className="ds-box" style={{ width: 56, height: 40 }} />
               <div className="ds-box" style={{ width: 56, height: 40 }} />
               <div className="ds-box" style={{ width: 56, height: 40 }} />
@@ -669,6 +690,140 @@ export default function StyleGuide() {
           </div>
         </div>
 
+        {/* Link */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Link</div>
+          <div className="ds-card">
+            <p style={{ fontSize: "var(--fs-base)", color: "var(--text-1)", lineHeight: 1.7, margin: "0 0 16px", maxWidth: "62ch" }}>
+              A link inside running text is the classic 1.4.1 failure, so{" "}
+              <Link href="#link">underline is the default</Link> rather than an option. Where a link is
+              already distinguishable by position — a row of nav items, a footer column — the quieter{" "}
+              <Link href="#link" underline="hover">hover underline</Link> is available. External links get an
+              icon plus text saying they open a new tab, like{" "}
+              <Link href="https://www.w3.org/WAI/WCAG22/quickref/" external>the WCAG quick reference</Link>.
+            </p>
+            <p className="ds-hint">
+              Colour alone never distinguishes a link from its surrounding text. external also sets
+              rel="noopener noreferrer", and adds the new-tab warning as real text rather than a title
+              attribute, so it is announced rather than sprung on you (3.2.5).
+            </p>
+          </div>
+        </div>
+
+        {/* Skip link */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Skip link</div>
+          <div className="ds-card">
+            <p style={{ fontSize: "var(--fs-sm)", color: "var(--text-2)", lineHeight: 1.6, margin: "0 0 14px", maxWidth: "62ch" }}>
+              There is a live skip link on this page — it is the first thing in the tab order. Click here,
+              then press <kbd className="ds-kbd">Shift</kbd> + <kbd className="ds-kbd">Tab</kbd> until it
+              slides into the top-left corner.
+            </p>
+            <p className="ds-hint">
+              The cheapest win in the system (2.4.1 Bypass Blocks). It is hidden with transform rather than
+              display:none, because the latter would take it out of the tab order and defeat the point. Give
+              the target tabIndex={-1} too, or some browsers scroll without moving focus and the next Tab
+              sends you back to the top of the page.
+            </p>
+          </div>
+        </div>
+
+        {/* Breadcrumbs */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Breadcrumbs</div>
+          <div className="ds-card">
+            <Breadcrumbs items={[
+              { label: "Home", href: "#home" },
+              { label: "Components", href: "#components" },
+              { label: "Navigation", href: "#navigation" },
+              { label: "Breadcrumbs" },
+            ]} />
+            <p className="ds-hint">
+              An ordered list inside a labelled nav landmark, because the order is the information. The
+              current page is the last item and is not a link — it carries aria-current="page" and renders as
+              text, so nobody tabs to a link that goes where they already are. Separators are hidden from
+              assistive tech; the list structure already conveys the sequence.
+            </p>
+          </div>
+        </div>
+
+        {/* Pagination */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Pagination</div>
+          <div className="ds-card">
+            <Stack gap="22px">
+              <div>
+                <div className="ds-label" style={{ marginBottom: 10 }}>Few pages — no collapsing</div>
+                <Pagination count={5} defaultPage={2} />
+              </div>
+              <div>
+                <div className="ds-label" style={{ marginBottom: 10 }}>Many pages — runs collapse to an ellipsis</div>
+                <Pagination count={24} defaultPage={12} />
+              </div>
+            </Stack>
+            <p className="ds-hint">
+              Every control has a real name: the numbered buttons are labelled “Page 3”, not “3”, so a list
+              of bare digits still makes sense out of context. The current page is marked with aria-current,
+              a soft tint and a step up in weight, so position never rests on colour — and the 32px targets
+              follow the Shape token closely enough to read as circles at the Pill setting. Previous and Next report
+              aria-disabled at the ends rather than taking the disabled attribute, so paging to the last page
+              never drops your focus onto the body.
+            </p>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Tabs</div>
+          <div className="ds-card">
+            <div className="ds-label" style={{ marginBottom: 12 }}>Automatic activation — arrows select as you move</div>
+            <Tabs label="Account settings" items={[
+              { value: "profile", label: "Profile", content: "Your name, photo and public handle. Selecting a tab here is instant, so arrowing across them is cheap." },
+              { value: "billing", label: "Billing", content: "Plan, payment method and invoices." },
+              { value: "team", label: "Team", content: "Invite people and manage their roles." },
+            ]} />
+            <div className="ds-label" style={{ margin: "28px 0 12px" }}>Manual activation — arrows move focus, Enter selects</div>
+            <Tabs label="Reports" activation="manual" items={[
+              { value: "daily", label: "Daily", content: "Use manual activation when selecting a tab loads data — arrowing past four tabs should not fire four requests." },
+              { value: "weekly", label: "Weekly", content: "The weekly rollup." },
+              { value: "monthly", label: "Monthly", content: "The monthly rollup." },
+            ]} />
+            <p className="ds-hint">
+              A roving tabindex keeps the whole tablist to a single stop in the tab order, so Tab moves from
+              the tabs into the panel rather than through every tab in turn. The selected tab shows an
+              indicator bar and a weight change as well as colour. The panel takes tabindex={0} so it can be
+              reached and scrolled by keyboard even when it holds nothing focusable.
+            </p>
+          </div>
+        </div>
+
+        {/* Accordion */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Accordion</div>
+          <div className="ds-card">
+            <Accordion defaultOpen={["what"]} headingLevel={3} items={[
+              { value: "what", label: "What does this system guarantee?",
+                content: "Every colour pairing is derived to a contrast ratio rather than hand-picked, so re-theming cannot silently drop below AA. Target sizes, focus rings and interactive borders come from tokens, so they hold across every component." },
+              { value: "theme", label: "How do I re-theme it?",
+                content: "Pass any brand colour to deriveAccent(hex, mode). It snaps the colour to accessible accent tokens that merge over the defaults — no component edits." },
+              { value: "claims", label: "Where do the accessibility claims live?",
+                content: "In the CONFORMANCE array in Conformance.jsx. It drives this page, the published accessibility statement and the test gate, so the claim made to auditors matches exactly what ships." },
+            ]} />
+            <p className="ds-hint">
+              Each trigger is a real button wrapped in a heading — the part most implementations miss.
+              Without it, the heading shortcut can't jump between sections and the page outline has a hole.
+              headingLevel is a prop because the right level depends on where the accordion sits. Set
+              allowMultiple to turn the accordion into independent disclosures.
+            </p>
+          </div>
+        </div>
+
         {/* Responsive */}
         <div className="ds-section">
           <span className="ds-label">Responsive</span>
@@ -681,9 +836,13 @@ export default function StyleGuide() {
               ))}
             </div>
             <div className="ds-label" style={{ marginBottom: 12 }}>Grid — resize to watch it reflow</div>
+            {/* Card radius is clamped: a card full of text should soften with the
+                shape token, not turn into a lozenge at the Pill setting. Pill lands
+                on the same 10px as Rounded — the guard the checkbox and the listbox
+                options already use. */}
             <Grid min={190}>
               {["Overview", "Members", "Billing", "Security"].map((t) => (
-                <div key={t} style={{ background: "var(--surface)", border: ".5px solid var(--border)", borderRadius: "var(--radius)", padding: "var(--space-4)" }}>
+                <div key={t} style={{ background: "var(--surface)", border: ".5px solid var(--border)", borderRadius: "min(var(--radius), 10px)", padding: "var(--space-4)" }}>
                   <div style={{ fontWeight: 500, color: "var(--text-1)", fontSize: "var(--fs-base)", marginBottom: 4 }}>{t}</div>
                   <div style={{ color: "var(--text-2)", fontSize: "var(--fs-sm)", lineHeight: 1.5 }}>Collapses to one column when space runs out.</div>
                 </div>
@@ -784,6 +943,7 @@ export default function StyleGuide() {
           <span className="ds-note"><Check size={13} /> Light and dark, any brand color, verified to WCAG 2.2 AA</span>
         </div>
 
+        </main>
       </div>
     </div>
   );

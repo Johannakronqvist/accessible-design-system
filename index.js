@@ -21,6 +21,13 @@ export { Select } from "./Select";
 export { Checkbox, RadioGroup, Switch } from "./SelectionControls";
 export { Badge } from "./Badge";
 export { Alert } from "./Alert";
+export { Link } from "./Link";
+export { SkipLink } from "./SkipLink";
+export { Breadcrumbs } from "./Breadcrumbs";
+export { Pagination } from "./Pagination";
+export { Tabs } from "./Tabs";
+export { Accordion } from "./Accordion";
+
 export { Container, Stack, Cluster, Grid } from "./Layout";
 
 export { deriveAccent } from "./color";

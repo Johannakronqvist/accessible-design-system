@@ -26,6 +26,12 @@ import { Select } from "../Select";
 import { Checkbox, RadioGroup, Switch } from "../SelectionControls";
 import { Badge } from "../Badge";
 import { Alert } from "../Alert";
+import { Link } from "../Link";
+import { SkipLink } from "../SkipLink";
+import { Breadcrumbs } from "../Breadcrumbs";
+import { Pagination } from "../Pagination";
+import { Tabs } from "../Tabs";
+import { Accordion } from "../Accordion";
 
 const clean = async (ui) => expect(await axe(render(ui).container)).toHaveNoViolations();
 
@@ -197,6 +203,72 @@ describe("Badge", () => {
         <Badge tone="accent" variant="soft" removeLabel="Remove Design" onRemove={() => {}}>Design</Badge>
       </>
     );
+  });
+});
+
+describe("Link", () => {
+  test("both underline modes and an external link", async () => {
+    await clean(
+      <p>
+        Read the <Link href="#a">quick reference</Link>, the{" "}
+        <Link href="#b" underline="hover">quiet variant</Link>, or{" "}
+        <Link href="https://example.com" external>an external page</Link>.
+      </p>
+    );
+  });
+});
+
+describe("SkipLink", () => {
+  test("default and custom target", async () => {
+    await clean(<><SkipLink /><main id="main" tabIndex={-1}>Content</main></>);
+    await clean(<><SkipLink href="#content">Skip to content</SkipLink><div id="content" /></>);
+  });
+});
+
+describe("Breadcrumbs", () => {
+  test("a full trail and a single crumb", async () => {
+    await clean(
+      <Breadcrumbs items={[
+        { label: "Home", href: "#home" },
+        { label: "Components", href: "#components" },
+        { label: "Breadcrumbs" },
+      ]} />
+    );
+    await clean(<Breadcrumbs items={[{ label: "Home" }]} />);
+  });
+});
+
+describe("Pagination", () => {
+  test("short, long with ellipses, and at both ends", async () => {
+    await clean(<Pagination count={5} defaultPage={2} />);
+    await clean(<Pagination count={24} defaultPage={12} />);
+    await clean(<Pagination count={24} defaultPage={1} />);
+    await clean(<Pagination count={24} defaultPage={24} />);
+  });
+});
+
+describe("Tabs", () => {
+  const items = [
+    { value: "a", label: "Profile", content: "Profile panel" },
+    { value: "b", label: "Billing", content: "Billing panel" },
+  ];
+  test("automatic, manual and vertical", async () => {
+    await clean(<Tabs label="Settings" items={items} />);
+    await clean(<Tabs label="Settings" items={items} activation="manual" />);
+    await clean(<Tabs label="Settings" items={items} orientation="vertical" />);
+  });
+});
+
+describe("Accordion", () => {
+  const items = [
+    { value: "one", label: "First question", content: "First answer" },
+    { value: "two", label: "Second question", content: "Second answer" },
+  ];
+  test("closed, open, multiple, and at another heading level", async () => {
+    await clean(<Accordion items={items} />);
+    await clean(<Accordion items={items} defaultOpen={["one"]} />);
+    await clean(<Accordion items={items} allowMultiple defaultOpen={["one", "two"]} />);
+    await clean(<Accordion items={items} headingLevel={2} />);
   });
 });
 

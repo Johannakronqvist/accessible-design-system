@@ -30,6 +30,7 @@ export const RESPONSIVE_CSS = `
   .ds-btn{min-height:44px}
   .ds-btn.sm{min-height:40px}
   .ds-input{min-height:48px}
+  .ds-pager-btn{min-width:44px;min-height:44px}
 }
 /* Guide chrome adapts on small screens; content reflows to 320px without 2D scroll (1.4.10). */
 @media (max-width:520px){
