@@ -15,21 +15,23 @@ Colour pairings are derived to a target ratio rather than hand-picked, and
 node script that fails the build if any token pairing drops below 4.5:1 (the same
 maths used in the guide), and run it in CI.
 
-### b. Component tests with jest-axe
+### b. Component tests (Vitest + jest-axe + Testing Library)
 
-Export the primitives (`Button`, `Field`, layout components) and assert zero axe
-violations for each state.
+Two suites, both run by `npm test`:
+
+- **`test/a11y.test.jsx`** — every component, in every state it ships, asserted to
+  have zero axe violations. This is the mechanical half: missing labels, broken
+  ARIA references, bad roles, orphaned attributes.
+- **`test/interaction.test.jsx`** — the half axe cannot see. Each block guards a
+  specific claim in `CONFORMANCE`, with the criterion named in the test title, so
+  a failure points straight at the row that has become untrue.
 
 ```jsx
-// a11y.test.jsx
-import { render } from "@testing-library/react";
-import { axe, toHaveNoViolations } from "jest-axe";
-import { Button, Field } from "./design-system";
+// test/a11y.test.jsx (extract)
+const clean = async (ui) => expect(await axe(render(ui).container)).toHaveNoViolations();
 
-expect.extend(toHaveNoViolations);
-
-test("Button variants have no axe violations", async () => {
-  const { container } = render(
+test("every variant and state", async () => {
+  await clean(
     <>
       <Button>Primary</Button>
       <Button variant="secondary">Secondary</Button>
@@ -38,20 +40,24 @@ test("Button variants have no axe violations", async () => {
       <Button loading>Saving</Button>
     </>
   );
-  expect(await axe(container)).toHaveNoViolations();
-});
-
-test("Field states have no axe violations", async () => {
-  const { container } = render(
-    <>
-      <Field label="Email" type="email" required />
-      <Field label="URL" error="That name is already taken." />
-      <Field label="ID" disabled />
-    </>
-  );
-  expect(await axe(container)).toHaveNoViolations();
 });
 ```
+
+```jsx
+// test/interaction.test.jsx (extract) — guards the 2.4.3 claim
+test("at a bound the button reports aria-disabled but keeps its place in the tab order", async () => {
+  render(<NumberStepper label="Seats" min={1} max={5} defaultValue={5} />);
+  const inc = screen.getByRole("button", { name: "Increase Seats" });
+  expect(inc).toHaveAttribute("aria-disabled", "true");
+  expect(inc).not.toBeDisabled(); // the whole point: focus is never dropped
+});
+```
+
+**What jsdom cannot reach.** Arrow / Home / End on a range input, and the browser's
+native track-click, are implemented by the browser rather than by the component —
+which is the whole argument for building `Slider` on a native range. jsdom has no
+such implementation, so those keys are verified manually (§3), not here. The suite
+asserts the element genuinely is a native range instead.
 
 ### c. Lint with eslint-plugin-jsx-a11y
 
@@ -72,22 +78,25 @@ Catches missing labels, alt text, and bad roles as you type.
 ### Wiring it up
 
 ```json
-// package.json (scripts)
+// package.json (scripts) — the first two exist today
 {
   "scripts": {
-    "test:a11y": "jest a11y.test.jsx",
-    "lint:a11y": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
+    "test": "vitest run",
+    "check": "node scripts/render-check.mjs",
+    "lint:a11y": "eslint \"**/*.{js,jsx}\"",
     "check:contrast": "node scripts/check-contrast.mjs"
   }
 }
 ```
 
-Run `test:a11y`, `lint:a11y`, and `check:contrast` as required CI steps. A failing
-check blocks the merge.
+`npm test` runs both suites; `npm run check` renders the whole style guide through
+Vite's SSR pipeline and fails on any React warning, which catches broken markup
+before it ever reaches a test. Run both as required CI steps, and add `lint:a11y`
+and `check:contrast` when you write them. A failing check blocks the merge.
 
 ## 2. The conformance map
 
-The `CONFORMANCE` array in `design-system.jsx` is the single source of truth. Each row
+The `CONFORMANCE` array in `Conformance.jsx` is the single source of truth. Each row
 is a WCAG 2.2 criterion with a status:
 
 - **Built in (`ok`)** — the component or token guarantees it.
@@ -119,6 +128,10 @@ Roughly half of WCAG can't be verified by tools. Before a release, walk this lis
 
 1. Build it on the tokens (contrast, target size, focus ring, border come for free).
 2. Add its rows to `CONFORMANCE` with honest statuses.
-3. Add a jest-axe test covering its states.
-4. Run lint and the contrast check.
-5. Update the accessibility statement's "last reviewed" date.
+3. Add its states to `test/a11y.test.jsx`.
+4. Add a block to `test/interaction.test.jsx` for every row you claimed that axe
+   cannot verify — name the criterion in the test title, so the row and the test
+   stay findable from each other.
+5. Add an assertion to `scripts/render-check.mjs` pinning the markup it owns.
+6. Run `npm test` and `npm run check`.
+7. Update the accessibility statement's "last reviewed" date.
