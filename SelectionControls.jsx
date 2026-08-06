@@ -1,5 +1,5 @@
 /*
-  Selection controls — Checkbox, RadioGroup and Switch. Native inputs with
+  Selection controls - Checkbox, RadioGroup and Switch. Native inputs with
   label association and a shared focus ring; a 24px+ hit target wraps each
   small visual (2.5.8). Radios are grouped in a fieldset with a legend, and
   the switch state is shown by thumb position, not color alone (1.4.1). The

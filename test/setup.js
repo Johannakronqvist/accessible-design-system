@@ -13,13 +13,13 @@ if (!Element.prototype.scrollIntoView) {
 
 /*
   jsdom 29 gives us the <dialog> element and its open property but none of its
-  methods — showModal() is genuinely undefined. This is a stub, not a polyfill:
+  methods - showModal() is genuinely undefined. This is a stub, not a polyfill:
   it makes the open/closed state and the close event work so React's logic runs
   and axe can inspect an open dialog.
 
   It emulates none of the three things that made native dialog the right choice
   in the first place: the focus trap, the inert background, and top-layer
-  rendering. Those are the browser's, and they are checked by hand — see the
+  rendering. Those are the browser's, and they are checked by hand - see the
   Modal entries in conformance-setup.md §3. Do not write a test here that
   appears to verify them; it would be testing this stub.
 */

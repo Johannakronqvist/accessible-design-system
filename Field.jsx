@@ -1,5 +1,5 @@
 /*
-  Field — text input with label, optional hint and error. Label/for and
+  Field - text input with label, optional hint and error. Label/for and
   aria-describedby wire the hint and error; aria-invalid + a role=alert region
   identify errors; the error carries an icon, never color alone (1.4.1).
   Required is announced to assistive tech; the field is a 44px touch target.
@@ -53,8 +53,8 @@ export const FIELD_CSS = `
 .ds-input:disabled{background:var(--disabled-bg);color:var(--disabled-text);
   border-color:var(--disabled-border);cursor:not-allowed}
 .ds-field-err{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);color:var(--danger)}
-.ds-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
-  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* .ds-sr lives in VISUALLYHIDDEN_CSS - it was defined here and in LINK_CSS with
+   nothing keeping the copies in step. Include that block alongside this one. */
 .ds-color-in{width:44px;height:44px;padding:0;border:1.5px solid var(--border-interactive);
   border-radius:var(--radius);background:none;cursor:pointer}
 `;

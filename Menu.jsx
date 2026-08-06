@@ -1,12 +1,12 @@
 /*
-  Menu — the ARIA menu button pattern, for firing actions. This is not Select:
+  Menu - the ARIA menu button pattern, for firing actions. This is not Select:
   a listbox picks a value and keeps focus on its trigger, driving the list with
   aria-activedescendant. A menu moves real DOM focus onto each item, because
   menu items are commands and a screen reader should read them as such.
 
   Open with click, Enter, Space or ArrowDown (focusing the first item) or
   ArrowUp (focusing the last). Move with the arrows and Home / End, jump with
-  type-ahead, fire with Enter or Space, dismiss with Escape or Tab — focus
+  type-ahead, fire with Enter or Space, dismiss with Escape or Tab - focus
   returns to the trigger either way. Escape and outside-press come from
   useDismissable, which Select and Navbar share.
 

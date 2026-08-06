@@ -1,5 +1,5 @@
 /*
-  Layout primitives — fluid, reflow-safe, responsive by default with no
+  Layout primitives - fluid, reflow-safe, responsive by default with no
   breakpoints required. Grid collapses to a single column instead of
   overflowing, so content reflows cleanly to 320px and at 400% zoom (1.4.10).
   RESPONSIVE_CSS also grows controls to touch targets on coarse pointers.

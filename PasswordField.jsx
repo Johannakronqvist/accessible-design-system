@@ -1,5 +1,5 @@
 /*
-  PasswordField — a password input built for 3.3.8 Accessible Authentication.
+  PasswordField - a password input built for 3.3.8 Accessible Authentication.
   Three things make it pass where most password fields fail: paste is never
   intercepted (there is deliberately no onPaste handler, so password managers
   and clipboards work), autoComplete is set so browsers and managers can fill
@@ -71,7 +71,7 @@ export function PasswordField({
                   ? <Check size={14} aria-hidden="true" />
                   : <Circle size={14} aria-hidden="true" />}
                 <span>{r.label}</span>
-                <span className="ds-sr">{met[i] ? " — met" : " — not met yet"}</span>
+                <span className="ds-sr">{met[i] ? " - met" : " - not met yet"}</span>
               </li>
             ))}
           </ul>

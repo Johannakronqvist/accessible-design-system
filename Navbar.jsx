@@ -1,12 +1,12 @@
 /*
-  Navbar — a <header> banner containing a brand slot, a labelled <nav> and an
+  Navbar - a <header> banner containing a brand slot, a labelled <nav> and an
   actions slot. The nav is labelled because a page usually has more than one:
   without aria-label, a screen reader's landmark list reads "navigation,
   navigation, navigation" and the user has to enter each one to find out which
   is which.
 
   There is exactly one nav element and one list of links. The obvious way to
-  build a responsive navbar — an inline list plus a separate collapsed panel —
+  build a responsive navbar - an inline list plus a separate collapsed panel -
   duplicates every link in the accessibility tree and produces two landmarks
   with the same name, which is a real 1.3.1 failure even though it looks fine.
   Instead the single nav is repositioned with flex order: it sits in the bar
@@ -16,7 +16,7 @@
   That collapsed row is a *non-modal* disclosure, not a dialog: focus is not
   trapped and the page behind stays reachable, which is correct for a panel
   that pushes content down rather than covering it. Escape closes it and
-  returns focus to the toggle, and a press outside closes it — all from
+  returns focus to the toggle, and a press outside closes it - all from
   useDismissable, the same behaviour Menu and Select use.
 
   A full-screen drawer that covers the page *would* need a focus trap and an

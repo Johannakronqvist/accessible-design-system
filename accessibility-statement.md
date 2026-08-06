@@ -3,7 +3,7 @@
 > Template. Replace every **[bracketed]** value, delete guidance quotes like this one,
 > and publish at a stable URL (commonly `/accessibility`). Under the European
 > Accessibility Act, in-scope products and services are expected to describe their
-> accessibility and offer a way to report problems. This is not legal advice —
+> accessibility and offer a way to report problems. This is not legal advice -
 > confirm your exact obligations for your product category and member state.
 
 **[Organisation]** is committed to making **[product / service]** accessible to
@@ -44,8 +44,8 @@ than re-entered (3.3.7).
 
 Despite our efforts, some content may not yet be fully accessible:
 
-- **[Area]** — **[what the issue is]**. **[Planned fix / date, or available alternative]**.
-- **[Area]** — **[what the issue is]**. **[Planned fix / date, or available alternative]**.
+- **[Area]** - **[what the issue is]**. **[Planned fix / date, or available alternative]**.
+- **[Area]** - **[what the issue is]**. **[Planned fix / date, or available alternative]**.
 
 If you find a barrier that is not listed here, please tell us using the details below.
 
@@ -69,6 +69,6 @@ Accessibility Act in **[member state]**: **[authority name and contact]**.
 
 - This statement was prepared on **[date]**.
 - It was last reviewed on **[date]**.
-- Assessment method: **[self-assessment / evaluation by a third party — name]**.
+- Assessment method: **[self-assessment / evaluation by a third party - name]**.
 - Basis: automated testing (axe-core), linting (eslint-plugin-jsx-a11y), and manual
   testing with assistive technology (**[e.g. NVDA, VoiceOver, keyboard-only]**).

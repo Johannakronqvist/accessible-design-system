@@ -1,5 +1,5 @@
 /*
-  SideNav — vertical navigation, optionally grouped.
+  SideNav - vertical navigation, optionally grouped.
 
   One landmark, not one per group. A nav landmark for every section would clog
   the landmark list, so this renders a single labelled <nav> containing one

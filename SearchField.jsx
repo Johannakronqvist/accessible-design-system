@@ -1,5 +1,5 @@
 /*
-  SearchField — a labelled search input inside a role=search landmark, with a
+  SearchField - a labelled search input inside a role=search landmark, with a
   clear button that only exists when there is something to clear and that
   returns focus to the input. The browser's own WebKit clear affordance is
   hidden because it is not keyboard reachable; ours is a real 24px button with

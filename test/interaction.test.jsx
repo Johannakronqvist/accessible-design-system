@@ -1,5 +1,5 @@
 /*
-  Behaviour tests — the half axe cannot see.
+  Behaviour tests - the half axe cannot see.
 
   Each block guards a specific claim made in CONFORMANCE (./Conformance.jsx).
   If a test here fails, a row in the published accessibility statement has
@@ -33,10 +33,18 @@ import { SideNav } from "../SideNav";
 import { ToggleGroup } from "../ToggleGroup";
 import { Modal, Drawer } from "../Modal";
 import { Button } from "../Button";
+import { ThemeProvider, buildTheme, useTheme } from "../ThemeProvider";
+import { Card } from "../Card";
+import { Avatar } from "../Avatar";
+import { Spinner } from "../Spinner";
+import { Divider } from "../Divider";
+import { Heading, Text } from "../Typography";
+import { VisuallyHidden } from "../VisuallyHidden";
+import { contrast, hexToRgb } from "../color";
 
 /* ------------------------------------------------------------ Select */
 
-describe("Select — 2.1.1 Keyboard, 4.1.2 Name Role Value", () => {
+describe("Select - 2.1.1 Keyboard, 4.1.2 Name Role Value", () => {
   const options = [
     { value: "free", label: "Free" },
     { value: "team", label: "Team" },
@@ -119,7 +127,7 @@ describe("Select — 2.1.1 Keyboard, 4.1.2 Name Role Value", () => {
 
 /* ------------------------------------------------------------ PasswordField */
 
-describe("PasswordField — 3.3.8 Accessible Authentication", () => {
+describe("PasswordField - 3.3.8 Accessible Authentication", () => {
   test("the reveal toggle flips the input type, aria-pressed and its label", async () => {
     const user = userEvent.setup();
     render(<PasswordField label="Password" />);
@@ -167,7 +175,7 @@ describe("PasswordField — 3.3.8 Accessible Authentication", () => {
 
 /* ------------------------------------------------------------ Textarea */
 
-describe("Textarea — 4.1.3 Status Messages, 3.3.1 Error Identification", () => {
+describe("Textarea - 4.1.3 Status Messages, 3.3.1 Error Identification", () => {
   test("the counter tracks typing and is described to the field", async () => {
     const user = userEvent.setup();
     render(<Textarea label="Bio" maxLength={20} showCount />);
@@ -196,7 +204,7 @@ describe("Textarea — 4.1.3 Status Messages, 3.3.1 Error Identification", () =>
 
 /* ------------------------------------------------------------ SearchField */
 
-describe("SearchField — 2.1.1 Keyboard, 4.1.2 Name Role Value", () => {
+describe("SearchField - 2.1.1 Keyboard, 4.1.2 Name Role Value", () => {
   test("the clear button appears only when there is something to clear", async () => {
     const user = userEvent.setup();
     render(<SearchField label="Search" />);
@@ -236,10 +244,10 @@ describe("SearchField — 2.1.1 Keyboard, 4.1.2 Name Role Value", () => {
 
 /* ------------------------------------------------------------ Slider */
 
-describe("Slider — 2.5.7 Dragging Movements, 4.1.2 Name Role Value", () => {
+describe("Slider - 2.5.7 Dragging Movements, 4.1.2 Name Role Value", () => {
   /*
     Note on what is testable here. Arrow / Home / End / Page Up / Down on a range
-    input are implemented by the *browser*, not by this component — that is
+    input are implemented by the *browser*, not by this component - that is
     precisely the argument for using a native range to satisfy 2.5.7. jsdom has no
     such implementation, so simulating those keys proves nothing. What these tests
     can prove is that the element really is a native range (so a browser will
@@ -290,10 +298,10 @@ describe("Slider — 2.5.7 Dragging Movements, 4.1.2 Name Role Value", () => {
 
 /* ------------------------------------------------------------ FileUpload */
 
-describe("FileUpload — 2.5.7 Dragging Movements, 3.3.1 Error Identification", () => {
+describe("FileUpload - 2.5.7 Dragging Movements, 3.3.1 Error Identification", () => {
   const pdf = (name = "brief.pdf") => new File(["x"], name, { type: "application/pdf" });
 
-  test("the file input stays in the tab order — dragging is never the only route", () => {
+  test("the file input stays in the tab order - dragging is never the only route", () => {
     render(<FileUpload label="Attachments" />);
     const input = document.querySelector("input[type=file]");
     expect(input).not.toHaveAttribute("hidden");
@@ -337,7 +345,7 @@ describe("FileUpload — 2.5.7 Dragging Movements, 3.3.1 Error Identification", 
 
 /* ------------------------------------------------------------ NumberStepper */
 
-describe("NumberStepper — 2.4.3 Focus Order, 4.1.2 Name Role Value", () => {
+describe("NumberStepper - 2.4.3 Focus Order, 4.1.2 Name Role Value", () => {
   test("the buttons step the value and are named after what they change", async () => {
     const user = userEvent.setup();
     render(<NumberStepper label="Seats" min={1} max={10} defaultValue={5} />);
@@ -391,7 +399,7 @@ describe("NumberStepper — 2.4.3 Focus Order, 4.1.2 Name Role Value", () => {
 
 /* ------------------------------------------------------------ FormGroup */
 
-describe("FormGroup — 3.3.7 Redundant Entry, 1.3.1 Info and Relationships", () => {
+describe("FormGroup - 3.3.7 Redundant Entry, 1.3.1 Info and Relationships", () => {
   const group = (defaultChecked) => (
     <FormGroup legend="Billing address" variant="card"
       sameAs={{ label: "Same as shipping address", defaultChecked, summary: "12 Rosewood Lane" }}>
@@ -433,7 +441,7 @@ describe("FormGroup — 3.3.7 Redundant Entry, 1.3.1 Info and Relationships", ()
 
 /* ------------------------------------------------------------ Link */
 
-describe("Link — 1.4.1 Use of Color, 3.2.5 Change on Request", () => {
+describe("Link - 1.4.1 Use of Color, 3.2.5 Change on Request", () => {
   test("is underlined by default, so prose links are not colour alone", () => {
     render(<Link href="#a">Read more</Link>);
     expect(screen.getByRole("link")).not.toHaveClass("hover-only");
@@ -463,7 +471,7 @@ describe("Link — 1.4.1 Use of Color, 3.2.5 Change on Request", () => {
 
 /* ------------------------------------------------------------ Breadcrumbs */
 
-describe("Breadcrumbs — 1.3.1 Info and Relationships, 2.4.8 Location", () => {
+describe("Breadcrumbs - 1.3.1 Info and Relationships, 2.4.8 Location", () => {
   const trail = [
     { label: "Home", href: "#home" },
     { label: "Components", href: "#components" },
@@ -488,7 +496,7 @@ describe("Breadcrumbs — 1.3.1 Info and Relationships, 2.4.8 Location", () => {
 
 /* ------------------------------------------------------------ Pagination */
 
-describe("Pagination — 4.1.2 Name Role Value, 2.4.3 Focus Order", () => {
+describe("Pagination - 4.1.2 Name Role Value, 2.4.3 Focus Order", () => {
   test("numbered buttons are named 'Page n', not a bare digit", () => {
     render(<Pagination count={5} defaultPage={2} />);
     expect(screen.getByRole("button", { name: "Page 3" })).toBeInTheDocument();
@@ -552,7 +560,7 @@ describe("Pagination — 4.1.2 Name Role Value, 2.4.3 Focus Order", () => {
 
 /* ------------------------------------------------------------ Tabs */
 
-describe("Tabs — 2.1.1 Keyboard, 3.2.2 On Input, 4.1.2 Name Role Value", () => {
+describe("Tabs - 2.1.1 Keyboard, 3.2.2 On Input, 4.1.2 Name Role Value", () => {
   const items = [
     { value: "a", label: "Profile", content: "Profile panel" },
     { value: "b", label: "Billing", content: "Billing panel" },
@@ -635,7 +643,7 @@ describe("Tabs — 2.1.1 Keyboard, 3.2.2 On Input, 4.1.2 Name Role Value", () =>
 
 /* ------------------------------------------------------------ Accordion */
 
-describe("Accordion — 1.3.1 Info and Relationships, 4.1.2 Name Role Value", () => {
+describe("Accordion - 1.3.1 Info and Relationships, 4.1.2 Name Role Value", () => {
   const items = [
     { value: "one", label: "First question", content: "First answer" },
     { value: "two", label: "Second question", content: "Second answer" },
@@ -682,7 +690,7 @@ describe("Accordion — 1.3.1 Info and Relationships, 4.1.2 Name Role Value", ()
 
 /* ------------------------------------------------------------ Menu */
 
-describe("Menu — 2.1.1 Keyboard, 2.4.3 Focus Order, 4.1.2 Name Role Value", () => {
+describe("Menu - 2.1.1 Keyboard, 2.4.3 Focus Order, 4.1.2 Name Role Value", () => {
   const items = [
     { value: "rename", label: "Rename", onSelect: () => {} },
     { value: "duplicate", label: "Duplicate" },
@@ -805,7 +813,7 @@ describe("Menu — 2.1.1 Keyboard, 2.4.3 Focus Order, 4.1.2 Name Role Value", ()
 
 /* ------------------------------------------------------------ Select + useDismissable */
 
-describe("Select — outside dismissal now comes from useDismissable", () => {
+describe("Select - outside dismissal now comes from useDismissable", () => {
   test("a press outside closes the listbox", async () => {
     const user = userEvent.setup();
     render(
@@ -836,7 +844,7 @@ describe("Select — outside dismissal now comes from useDismissable", () => {
 
 /* ------------------------------------------------------------ Navbar / NavItem */
 
-describe("Navbar — 1.3.1 Info and Relationships, 2.4.3 Focus Order", () => {
+describe("Navbar - 1.3.1 Info and Relationships, 2.4.3 Focus Order", () => {
   const items = [
     { href: "#projects", label: "Projects" },
     { href: "#team", label: "Team" },
@@ -882,7 +890,7 @@ describe("Navbar — 1.3.1 Info and Relationships, 2.4.3 Focus Order", () => {
 
 /* ------------------------------------------------------------ SideNav */
 
-describe("SideNav — 1.3.1 Info and Relationships", () => {
+describe("SideNav - 1.3.1 Info and Relationships", () => {
   const groups = [
     { label: "Workspace", items: [{ href: "#o", label: "Overview" }, { href: "#m", label: "Members" }] },
     { label: "Account", items: [{ href: "#p", label: "Profile" }] },
@@ -911,7 +919,7 @@ describe("SideNav — 1.3.1 Info and Relationships", () => {
 
 /* ------------------------------------------------------------ ToggleGroup */
 
-describe("ToggleGroup — 2.1.1 Keyboard, 4.1.2 Name Role Value", () => {
+describe("ToggleGroup - 2.1.1 Keyboard, 4.1.2 Name Role Value", () => {
   const options = [
     { value: "board", label: "Board" },
     { value: "list", label: "List" },
@@ -974,14 +982,14 @@ describe("ToggleGroup — 2.1.1 Keyboard, 4.1.2 Name Role Value", () => {
   What is deliberately NOT tested here.
 
   The focus trap, the inert background and top-layer rendering are the browser's,
-  and jsdom implements none of them — test/setup.js stubs showModal()/close() only
+  and jsdom implements none of them - test/setup.js stubs showModal()/close() only
   far enough for React's logic to run. A test asserting "Tab stays inside" would be
   asserting the stub, not the component, and would pass whether or not the real
   thing worked. Those three live on the manual list in conformance-setup.md §3.
 
   What follows covers the parts that are genuinely ours.
 */
-describe("Modal — 4.1.2 Name Role Value, 1.3.1 Info and Relationships", () => {
+describe("Modal - 4.1.2 Name Role Value, 1.3.1 Info and Relationships", () => {
   test("the title labels the dialog and the description describes it", () => {
     render(
       <Modal open onClose={() => {}} title="Delete this project?"
@@ -1095,7 +1103,7 @@ describe("Drawer", () => {
 
 /* ------------------------------------------------------------ Button */
 
-describe("Button — props reach the underlying element", () => {
+describe("Button - props reach the underlying element", () => {
   // Regression: Button had no onClick and no spread, so handlers were silently
   // dropped. Found when the Modal demo's triggers did nothing.
   test("onClick fires", async () => {
@@ -1129,7 +1137,7 @@ describe("Button — props reach the underlying element", () => {
 
 /* ------------------------------------------------------------ onNavigate */
 
-describe("Navbar / SideNav — onNavigate", () => {
+describe("Navbar / SideNav - onNavigate", () => {
   const items = [
     { href: "#projects", label: "Projects" },
     { href: "#team", label: "Team" },
@@ -1171,5 +1179,243 @@ describe("Navbar / SideNav — onNavigate", () => {
     );
     await user.click(screen.getByRole("link", { name: "Members" }));
     expect(onNavigate.mock.calls[0][0]).toBe("#m");
+  });
+});
+
+/* ------------------------------------------------------------ ThemeProvider */
+
+describe("buildTheme - the pure token assembly", () => {
+  test("emits the full variable set the components read", () => {
+    const { vars } = buildTheme();
+    // Palette, scale, shape, targets, fonts.
+    expect(vars["--bg"]).toBeDefined();
+    expect(vars["--accent-fill"]).toBeDefined();
+    expect(vars["--fs-base"]).toBe("16px");
+    expect(vars["--space-4"]).toBe("32px");
+    expect(vars["--radius"]).toBe("10px");
+    expect(vars["--target-min"]).toBe("24px");
+    expect(vars["--target-touch"]).toBe("44px");
+    expect(vars["--font-body"]).toContain("Open Sans");
+    // The tone families Badge and Alert depend on.
+    expect(vars["--bd-success-sb"]).toBeDefined();
+    expect(vars["--al-danger-head"]).toBeDefined();
+  });
+
+  test("derives the type scale from one base and ratio", () => {
+    const { vars, fontScale } = buildTheme({ baseSize: 20, ratio: 1.25 });
+    expect(fontScale.base).toBe(20);
+    expect(fontScale.sm).toBe(16); // 20 / 1.25
+    expect(fontScale.lg).toBe(25); // 20 * 1.25
+    expect(vars["--fs-3xl"]).toBe(`${Math.round(20 * 1.25 ** 4)}px`);
+  });
+
+  test("derives the spacing scale from one unit", () => {
+    const { vars } = buildTheme({ spacingUnit: 4 });
+    expect(vars["--space-1"]).toBe("4px");
+    expect(vars["--space-8"]).toBe("32px");
+  });
+
+  test("dark mode swaps the palette and its tone tables", () => {
+    const light = buildTheme({ mode: "light" });
+    const dark = buildTheme({ mode: "dark" });
+    expect(dark.mode).toBe("dark");
+    expect(dark.vars["--bg"]).not.toBe(light.vars["--bg"]);
+    expect(dark.vars["--al-info-bg"]).not.toBe(light.vars["--al-info-bg"]);
+  });
+
+  test("a brand colour is snapped to accessible shades, not used raw", () => {
+    // Pale yellow: unusable as a fill against white if taken literally.
+    const { vars } = buildTheme({ accent: "#FFE81A" });
+    expect(vars["--accent-fill"]).not.toBe("#FFE81A");
+
+    const white = [255, 255, 255];
+    const fill = hexToRgb(vars["--accent-fill"]);
+    expect(contrast(white, fill)).toBeGreaterThanOrEqual(4.5);
+
+    const text = hexToRgb(vars["--accent-text"]);
+    const bg = hexToRgb(vars["--bg"]);
+    expect(contrast(text, bg)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("the same guarantee holds in dark mode", () => {
+    const { vars } = buildTheme({ accent: "#FFE81A", mode: "dark" });
+    expect(contrast([255, 255, 255], hexToRgb(vars["--accent-fill"]))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(hexToRgb(vars["--accent-text"]), hexToRgb(vars["--bg"]))).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("ThemeProvider", () => {
+  test("puts the variables and colour-scheme on the element it renders", () => {
+    const { container } = render(<ThemeProvider mode="dark"><span>Hi</span></ThemeProvider>);
+    const root = container.firstChild;
+    expect(root).toHaveClass("ds-theme");
+    expect(root.style.getPropertyValue("--bg")).toBe("#1B1618");
+    expect(root.style.colorScheme).toBe("dark");
+  });
+
+  test("keeps a caller's className and renders the tag it is asked for", () => {
+    const { container } = render(<ThemeProvider as="section" className="app">x</ThemeProvider>);
+    expect(container.firstChild.tagName).toBe("SECTION");
+    expect(container.firstChild).toHaveClass("ds-theme", "app");
+  });
+
+  test("does not request fonts unless asked", () => {
+    render(<ThemeProvider>x</ThemeProvider>);
+    expect(document.querySelector("link[data-ds-fonts]")).toBeNull();
+  });
+
+  // Regression: the guard used to match on the href inside an attribute selector,
+  // which does not reliably match a long URL - so every mount appended another link.
+  test("loadFonts opts in, and does not inject the link twice", () => {
+    render(<ThemeProvider loadFonts>a</ThemeProvider>);
+    render(<ThemeProvider loadFonts>b</ThemeProvider>);
+    render(<ThemeProvider loadFonts>c</ThemeProvider>);
+    expect(document.querySelectorAll("link[data-ds-fonts]")).toHaveLength(1);
+    document.querySelectorAll("link[data-ds-fonts]").forEach((l) => l.remove());
+  });
+
+  test("a different fontHref gets its own link", () => {
+    render(<ThemeProvider loadFonts>a</ThemeProvider>);
+    render(<ThemeProvider loadFonts fontHref="https://example.com/other.css">b</ThemeProvider>);
+    expect(document.querySelectorAll("link[data-ds-fonts]")).toHaveLength(2);
+    document.querySelectorAll("link[data-ds-fonts]").forEach((l) => l.remove());
+  });
+
+  test("useTheme hands the resolved theme to descendants", () => {
+    function Probe() {
+      const { mode, tokens } = useTheme();
+      return <span data-mode={mode} data-fill={tokens["--accent-fill"]} />;
+    }
+    const { container } = render(<ThemeProvider mode="dark"><Probe /></ThemeProvider>);
+    expect(container.querySelector("span").dataset.mode).toBe("dark");
+    expect(container.querySelector("span").dataset.fill).toBe("#A85055");
+  });
+
+  test("useTheme outside a provider fails loudly rather than silently", () => {
+    function Orphan() { useTheme(); return null; }
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => render(<Orphan />)).toThrow(/must be used inside a <ThemeProvider>/);
+    spy.mockRestore();
+  });
+});
+
+/* ------------------------------------------------------------ Presentational batch */
+
+describe("Card - 1.3.1 Info and Relationships", () => {
+  test("the title is a real heading at the level asked for", () => {
+    render(<Card title="Members" headingLevel={4}>Body</Card>);
+    expect(screen.getByRole("heading", { level: 4 })).toHaveTextContent("Members");
+  });
+
+  test("no title means no heading - a card is not automatically a section", () => {
+    render(<Card>Body</Card>);
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  });
+
+  test("renders the tag asked for and keeps a caller's className", () => {
+    const { container } = render(<Card as="section" className="mine">x</Card>);
+    expect(container.firstChild.tagName).toBe("SECTION");
+    expect(container.firstChild).toHaveClass("ds-card", "pad-md", "mine");
+  });
+});
+
+describe("Avatar - 1.1.1 Non-text Content", () => {
+  test("an image beside a name is decorative by default", () => {
+    const { container } = render(<Avatar name="Jane Cooper" src="/j.png" />);
+    // alt="" keeps it out of the tree, so the name is not announced twice.
+    expect(container.querySelector("img")).toHaveAttribute("alt", "");
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  test("an explicit alt makes it meaningful, for when it stands alone", () => {
+    render(<Avatar name="Jane Cooper" src="/j.png" alt="Jane Cooper" />);
+    expect(screen.getByRole("img", { name: "Jane Cooper" })).toBeInTheDocument();
+  });
+
+  test("initials fall back from the name and are hidden from assistive tech", () => {
+    const { container } = render(<Avatar name="Jane Cooper" />);
+    expect(container.textContent).toBe("JC");
+    expect(container.querySelector("[aria-hidden='true']")).toHaveTextContent("JC");
+  });
+
+  test("initials take the first two words only", () => {
+    const { container } = render(<Avatar name="Ada Byron King Lovelace" />);
+    expect(container.textContent).toBe("AB");
+  });
+});
+
+describe("Spinner - 4.1.3 Status Messages", () => {
+  test("is a status region carrying its label", () => {
+    render(<Spinner label="Syncing changes" />);
+    expect(screen.getByRole("status")).toHaveTextContent("Syncing changes");
+  });
+
+  test("the mark itself is hidden, so the label is announced once", () => {
+    const { container } = render(<Spinner label="Loading" />);
+    expect(container.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+  });
+});
+
+describe("Divider - 1.3.1 Info and Relationships", () => {
+  test("unlabelled is an hr, which is already a separator", () => {
+    const { container } = render(<Divider />);
+    expect(container.firstChild.tagName).toBe("HR");
+  });
+
+  test("labelled is a named separator", () => {
+    render(<Divider label="or" />);
+    const sep = screen.getByRole("separator");
+    expect(sep).toHaveAccessibleName("or");
+    expect(sep).toHaveAttribute("aria-orientation", "horizontal");
+  });
+
+  test("vertical reports its orientation", () => {
+    render(<Divider orientation="vertical" />);
+    expect(screen.getByRole("separator")).toHaveAttribute("aria-orientation", "vertical");
+  });
+
+  test("emphasis switches which border token it reads", () => {
+    const { container, rerender } = render(<Divider />);
+    expect(container.firstChild).toHaveClass("em-subtle");
+    rerender(<Divider emphasis="strong" />);
+    expect(container.firstChild).toHaveClass("em-strong");
+  });
+});
+
+describe("Heading / Text - level and size are independent", () => {
+  // The point of the component: wanting smaller text must never change the outline.
+  test("size does not change the level", () => {
+    render(<Heading level={2} size="sm">Small but still h2</Heading>);
+    const h = screen.getByRole("heading", { level: 2 });
+    expect(h.tagName).toBe("H2");
+    expect(h).toHaveClass("fs-sm");
+  });
+
+  test("level does not dictate the size beyond a sensible default", () => {
+    const { rerender } = render(<Heading level={3}>Default</Heading>);
+    expect(screen.getByRole("heading", { level: 3 })).toHaveClass("fs-xl");
+    rerender(<Heading level={3} size="3xl">Big</Heading>);
+    expect(screen.getByRole("heading", { level: 3 })).toHaveClass("fs-3xl");
+  });
+
+  test("Heading and Text share one scale, so base means base in both", () => {
+    render(<><Heading level={4} size="base">H</Heading><Text size="base">T</Text></>);
+    expect(screen.getByRole("heading", { level: 4 })).toHaveClass("fs-base");
+    expect(screen.getByText("T")).toHaveClass("fs-base");
+  });
+
+  test("Text renders the element asked for", () => {
+    render(<Text as="span" tone="muted" weight="medium">Inline</Text>);
+    const el = screen.getByText("Inline");
+    expect(el.tagName).toBe("SPAN");
+    expect(el).toHaveClass("tone-muted", "w-medium");
+  });
+});
+
+describe("VisuallyHidden", () => {
+  test("stays in the accessibility tree - it is clipped, not removed", () => {
+    render(<button type="button"><span aria-hidden="true">x</span><VisuallyHidden>Delete invoice</VisuallyHidden></button>);
+    // display:none or visibility:hidden here would drop the name entirely.
+    expect(screen.getByRole("button")).toHaveAccessibleName("Delete invoice");
   });
 });

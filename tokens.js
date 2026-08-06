@@ -1,11 +1,11 @@
 /*
-  Design tokens — the single source of truth for color, and the tone tables
+  Design tokens - the single source of truth for color, and the tone tables
   and breakpoints the components and style guide theme from.
 
   PRESETS.sweet[mode] is the default (Sweet Rosewood) set of CSS custom
   properties. Apply them to a root element (e.g. :root or a <ThemeProvider>
   div) and every component inherits them. To brand it, pass any color to
-  deriveAccent(hex, mode) (see ./color) — it snaps the color to accessible
+  deriveAccent(hex, mode) (see ./color) - it snaps the color to accessible
   accent tokens that merge over these defaults.
 */
 
@@ -13,8 +13,8 @@ export const PRESETS = {
   sweet: {
     name: "Sweet Rosewood",
     // Both faces are variable across 400..700, so every weight the components
-    // author — the 500 on labels and buttons, the 600 on alert headings and
-    // legends — resolves exactly rather than rounding to a neighbouring cut.
+    // author - the 500 on labels and buttons, the 600 on alert headings and
+    // legends - resolves exactly rather than rounding to a neighbouring cut.
     fonts: { display: "'Playfair Display', serif", body: "'Open Sans', sans-serif" },
     light: {
       "--bg": "#FCF8F5", "--surface": "#FFFFFF", "--text-1": "#2A2320",

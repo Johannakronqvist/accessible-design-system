@@ -1,5 +1,5 @@
 /*
-  SkipLink — the cheapest win in the whole system (2.4.1 Bypass Blocks). It is
+  SkipLink - the cheapest win in the whole system (2.4.1 Bypass Blocks). It is
   the first thing in the tab order and invisible until it takes focus, at which
   point it slides into the top-left corner as a solid, high-contrast target.
 

@@ -1,5 +1,5 @@
 /*
-  Accordion — a stack of disclosures. Each trigger is a real button wrapped in
+  Accordion - a stack of disclosures. Each trigger is a real button wrapped in
   a heading, which is the part most implementations get wrong: without the
   heading, a screen reader user cannot jump between sections with the heading
   shortcut, and the page's outline has a hole in it. headingLevel is a prop
@@ -10,7 +10,7 @@
   together, and the chevron rotates so open/closed is conveyed by orientation
   as well as by position (1.4.1).
 
-  allowMultiple={false} is the true accordion — opening one closes the rest.
+  allowMultiple={false} is the true accordion - opening one closes the rest.
   Set it true and each panel becomes an independent disclosure.
 */
 

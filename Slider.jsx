@@ -1,12 +1,12 @@
 /*
-  Slider — a native input[type=range], which is the whole accessibility
+  Slider - a native input[type=range], which is the whole accessibility
   argument: it is operable with the arrow keys, Home / End and Page Up / Down,
   and a click anywhere on the track moves it, so nothing here requires a drag
   (2.5.7) or a path-based gesture (2.5.1). The thumb is a 24px target (2.5.8)
   and the filled portion meets 3:1 against the empty track (1.4.11).
 
-  formatValue turns the raw number into something a person can hear — "€40",
-  "Medium", "2.5×" — and feeds aria-valuetext, so the announcement matches the
+  formatValue turns the raw number into something a person can hear - "€40",
+  "Medium", "2.5×" - and feeds aria-valuetext, so the announcement matches the
   visible label rather than a bare integer. Marks are decorative and hidden
   from assistive tech because the value is already announced.
 

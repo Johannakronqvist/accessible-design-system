@@ -1,11 +1,11 @@
 /*
-  Automated accessibility gate — step 3 of "Adding a component later" in
+  Automated accessibility gate - step 3 of "Adding a component later" in
   conformance-setup.md. Every component, in every state it ships, asserted to
   have zero axe violations.
 
   This catches the mechanical half of WCAG: missing labels, broken ARIA
   references, bad roles, orphaned attributes. It cannot see whether a keyboard
-  flow makes sense or whether an announcement is useful — interaction.test.jsx
+  flow makes sense or whether an announcement is useful - interaction.test.jsx
   covers the behaviour, and conformance-setup.md §3 lists what stays manual.
 */
 
@@ -39,6 +39,12 @@ import { Navbar } from "../Navbar";
 import { SideNav } from "../SideNav";
 import { ToggleGroup } from "../ToggleGroup";
 import { Modal, Drawer } from "../Modal";
+import { Card } from "../Card";
+import { Avatar } from "../Avatar";
+import { Spinner } from "../Spinner";
+import { Divider } from "../Divider";
+import { Heading, Text } from "../Typography";
+import { VisuallyHidden } from "../VisuallyHidden";
 
 const clean = async (ui) => expect(await axe(render(ui).container)).toHaveNoViolations();
 
@@ -310,7 +316,7 @@ describe("Navbar / NavItem", () => {
   // Guards against the obvious-but-wrong build: an inline list plus a separate
   // collapsed panel duplicates every link and yields two identically-named
   // landmarks. One nav, repositioned by CSS, is why this passes.
-  test("with the collapsed nav open — still one landmark, one copy of each link", async () => {
+  test("with the collapsed nav open - still one landmark, one copy of each link", async () => {
     const { container } = render(<Navbar brand="Acme" items={items} currentHref="#team" />);
     await userEvent.setup().click(screen.getByRole("button", { name: "Menu" }));
 
@@ -378,6 +384,59 @@ describe("Modal / Drawer", () => {
   test("drawer on both edges", async () => {
     await clean(<Drawer open onClose={() => {}} title="Filters" placement="right" />);
     await clean(<Drawer open onClose={() => {}} title="Filters" placement="left" />);
+  });
+});
+
+describe("Presentational batch", () => {
+  test("Card, plain and with a title and footer", async () => {
+    await clean(<Card>Plain surface.</Card>);
+    await clean(
+      <Card title="Members" headingLevel={4} footer={<Button size="sm">Manage</Button>}>
+        Body copy.
+      </Card>
+    );
+    await clean(<Card as="section" padding="lg" title="Section" headingLevel={2}>Copy.</Card>);
+  });
+
+  test("Avatar as image and as initials, every size", async () => {
+    await clean(<Avatar name="Jane Cooper" />);
+    await clean(<Avatar name="Jane Cooper" alt="Jane Cooper" />);
+    await clean(<Avatar name="Jane Cooper" src="/j.png" />);
+    await clean(<Avatar name="Jane Cooper" src="/j.png" alt="Jane Cooper" />);
+    await clean(
+      <>
+        {["sm", "md", "lg", "xl"].map((s) => <Avatar key={s} name="Jane Cooper" size={s} />)}
+      </>
+    );
+  });
+
+  test("Spinner, hidden and visible label", async () => {
+    await clean(<Spinner />);
+    await clean(<Spinner label="Syncing changes" labelVisible size="lg" />);
+  });
+
+  test("Divider, plain, labelled and vertical", async () => {
+    await clean(<Divider />);
+    await clean(<Divider label="or" />);
+    await clean(<Divider orientation="vertical" />);
+  });
+
+  test("Heading and Text across levels, sizes and tones", async () => {
+    await clean(
+      <>
+        <Heading level={1}>Level one</Heading>
+        <Heading level={2} size="lg">Level two, smaller</Heading>
+        <Heading level={3} display={false}>Body face</Heading>
+        <Text measure>Running text.</Text>
+        <Text size="sm" tone="muted" weight="medium">Secondary.</Text>
+      </>
+    );
+  });
+
+  test("VisuallyHidden", async () => {
+    await clean(<button type="button" className="ds-btn primary md">
+      <span aria-hidden="true">x</span><VisuallyHidden>Delete invoice</VisuallyHidden>
+    </button>);
   });
 });
 

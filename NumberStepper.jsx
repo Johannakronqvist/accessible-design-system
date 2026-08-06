@@ -1,5 +1,5 @@
 /*
-  NumberStepper — a native input[type=number], so assistive tech gets the
+  NumberStepper - a native input[type=number], so assistive tech gets the
   spinbutton role, min / max / step and value announcements for free, and the
   arrow keys work without any custom key handling (2.1.1). The − and + buttons
   are an addition for pointer and touch, each a 24px target with a label that
@@ -34,7 +34,7 @@ export function NumberStepper({
   const unitId = unit ? `${id}-unit` : undefined;
   const describedBy = [hintId, unitId, errId].filter(Boolean).join(" ") || undefined;
 
-  // An empty field is "no value", not zero — otherwise a min of 1 would read as at-minimum.
+  // An empty field is "no value", not zero - otherwise a min of 1 would read as at-minimum.
   const num = value === "" ? NaN : Number(value);
   const atMin = min != null && Number.isFinite(num) && num <= min;
   const atMax = max != null && Number.isFinite(num) && num >= max;

@@ -1,10 +1,10 @@
 /*
-  NavItem — the primitive Navbar and SideNav share, so "which page am I on"
+  NavItem - the primitive Navbar and SideNav share, so "which page am I on"
   is answered the same way in both.
 
   current does two separate jobs. It sets aria-current="page", which is what a
   screen reader announces, and it applies an accent colour paired with a step
-  up in weight — so sighted users who cannot distinguish the accent still see
+  up in weight - so sighted users who cannot distinguish the accent still see
   which item is active (1.4.1). Colour alone would fail that, and it is the
   usual way nav bars do fail it.
 

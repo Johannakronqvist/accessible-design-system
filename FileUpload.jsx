@@ -1,5 +1,5 @@
 /*
-  FileUpload — drag and drop is an enhancement here, never the only way in.
+  FileUpload - drag and drop is an enhancement here, never the only way in.
   The primary control is a real <input type="file"> paired with a <label>, so
   the same action is available by keyboard, by click and by touch with no
   dragging at all (2.5.7). The input stays in the tab order (it is hidden with

@@ -1,10 +1,10 @@
 /*
-  useDismissable — the shared "this thing can be closed" behaviour: Escape to
+  useDismissable - the shared "this thing can be closed" behaviour: Escape to
   dismiss, a pointer press outside to dismiss, and focus returning to whatever
   opened it.
 
   It exists because three components need the same three rules and were about
-  to hand-roll them a third and fourth time — Select already had its own copy,
+  to hand-roll them a third and fourth time - Select already had its own copy,
   Menu needs it, and Navbar's collapsed nav panel needs it again. Getting focus
   return wrong is a 2.4.3 failure that is easy to ship and hard to notice.
 

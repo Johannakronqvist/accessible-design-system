@@ -1,5 +1,5 @@
 /*
-  Badge — solid (default) and soft variants across six tones (neutral, accent,
+  Badge - solid (default) and soft variants across six tones (neutral, accent,
   success, warning, danger, info), each verified AA in light and dark. Reads
   the --bd-<tone>-* CSS vars the theme layer emits from BADGE_TONES (./tokens).
   The label always states the meaning, so nothing rests on color alone; the

@@ -1,5 +1,5 @@
 /*
-  Alert / Callout — soft tint across four tones, each with an icon and text so
+  Alert / Callout - soft tint across four tones, each with an icon and text so
   severity never rests on color alone (1.4.1); the icon is sized up as the
   primary non-color cue. Reads the --al-<tone>-* CSS vars the theme layer emits
   from ALERT_TONES (./tokens). Pass live="assertive" (role=alert) or

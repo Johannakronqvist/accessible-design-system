@@ -1,9 +1,9 @@
 /*
-  Modal and Drawer — both native <dialog> opened with showModal(), which is the
+  Modal and Drawer - both native <dialog> opened with showModal(), which is the
   entire point. The browser then supplies, correctly and for free:
 
     · a real focus trap, without us hand-rolling one
-    · an inert background — content behind is unreachable by keyboard and
+    · an inert background - content behind is unreachable by keyboard and
       hidden from assistive tech, with no aria-hidden bookkeeping
     · Escape to dismiss, and focus returning to whatever opened it
     · top-layer rendering, so no ancestor's overflow:hidden, transform or
@@ -13,7 +13,7 @@
   lives in the normal stacking context and any clipping ancestor can cut it in
   half. A dialog in the top layer cannot be clipped by anything.
 
-  This is the same reasoning as Slider using a native range for 2.5.7 — and it
+  This is the same reasoning as Slider using a native range for 2.5.7 - and it
   carries the same testing consequence. jsdom implements neither showModal()
   nor the top layer, so the trap and the inert background are verified by hand
   (conformance-setup.md §3), not in CI. What the suite does cover is everything
@@ -21,7 +21,7 @@
   keeping React state in step with the browser's own close.
 
   Controlled on purpose. Almost everything else in this system is uncontrolled,
-  but whether a modal is showing is always the parent's business — it follows
+  but whether a modal is showing is always the parent's business - it follows
   from a route, a pending action, an unsaved-changes check.
 
     const [open, setOpen] = useState(false);

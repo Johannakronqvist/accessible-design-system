@@ -36,7 +36,16 @@ export { Modal, Drawer } from "./Modal";
 
 export { useDismissable } from "./useDismissable";
 
+export { Card } from "./Card";
+export { Avatar } from "./Avatar";
+export { Spinner } from "./Spinner";
+export { Divider } from "./Divider";
+export { Heading, Text } from "./Typography";
+export { VisuallyHidden } from "./VisuallyHidden";
+
 export { Container, Stack, Cluster, Grid } from "./Layout";
+
+export { ThemeProvider, buildTheme, useTheme } from "./ThemeProvider";
 
 export { deriveAccent } from "./color";
 export { PRESETS, BADGE_TONES, ALERT_TONES, BREAKPOINTS } from "./tokens";

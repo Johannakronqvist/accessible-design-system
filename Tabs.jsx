@@ -1,12 +1,12 @@
 /*
-  Tabs — the WAI-ARIA tabs pattern. Arrows move between tabs, Home / End jump
+  Tabs - the WAI-ARIA tabs pattern. Arrows move between tabs, Home / End jump
   to the ends, and a roving tabindex keeps the whole tablist to a single stop
   in the tab order, so Tab moves from the tabs into the panel rather than
   through every tab in turn.
 
   activation is the interesting prop. "automatic" selects as you arrow, which
   is fast for cheap panels. "manual" moves focus only and waits for Enter or
-  Space — the right choice when selecting a tab loads data or changes context,
+  Space - the right choice when selecting a tab loads data or changes context,
   because arrowing past four tabs should not fire four loads (3.2.2 On Input).
 
   The selected tab is marked by aria-selected, a filled indicator bar and a

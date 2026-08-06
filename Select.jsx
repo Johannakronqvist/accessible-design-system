@@ -1,7 +1,7 @@
 /*
-  Select — a select-only ARIA combobox (role=combobox + listbox/option).
+  Select - a select-only ARIA combobox (role=combobox + listbox/option).
   Open with Enter / Space / ↑ / ↓; move with the arrows, Home / End and
-  type-ahead; choose with Enter; dismiss with Escape — focus returns to the
+  type-ahead; choose with Enter; dismiss with Escape - focus returns to the
   trigger. Selected is marked with a check, never color alone (1.4.1). Reuses
   the Field label / hint / error wiring, the focus ring and the shape token.
 */

@@ -1,9 +1,9 @@
 /*
-  Pagination — a labelled nav landmark around a list of page buttons, styled to
+  Pagination - a labelled nav landmark around a list of page buttons, styled to
   sit quietly under a table rather than compete with it: 32px targets, no
   borders, numbers in the secondary text colour. The current page carries
   aria-current="page" and is marked visually by a soft tint plus a step up in
-  weight — the weight being the non-colour cue that keeps this clear of 1.4.1
+  weight - the weight being the non-colour cue that keeps this clear of 1.4.1
   now that there is no solid fill.
 
   32px clears the 24px minimum target (2.5.8) with room to spare; the bump to
@@ -13,7 +13,7 @@
   Every control has a real name: the numbered buttons are labelled "Page 3",
   not "3", so a screen reader user hearing a list of bare digits knows what
   they are. Previous / Next disable at the ends via aria-disabled rather than
-  the disabled attribute — the same reasoning as NumberStepper, so paging to
+  the disabled attribute - the same reasoning as NumberStepper, so paging to
   the last page never drops your focus onto the body (2.4.3).
 
   Uncontrolled by default like the rest of the system: pass defaultPage and
@@ -89,7 +89,7 @@ export function Pagination({
 export const PAGINATION_CSS = `
 .ds-pager{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center;gap:2px}
 /* 32px square: comfortably above the 24px minimum target (2.5.8), quiet enough
-   to sit under a table, and small enough that the shape token is legible —
+   to sit under a table, and small enough that the shape token is legible -
    --radius reads as a soft square at Sharp and a full circle at Pill. */
 .ds-pager-btn{font-family:var(--font-body);font-size:var(--fs-sm);font-weight:400;
   min-width:32px;min-height:32px;padding:0 8px;

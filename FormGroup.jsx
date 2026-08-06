@@ -1,13 +1,13 @@
 /*
-  FormGroup — a fieldset with a legend, so related controls are announced as
+  FormGroup - a fieldset with a legend, so related controls are announced as
   one named group instead of a loose run of inputs (1.3.1). The group hint and
   error are wired to the fieldset with aria-describedby, which means they are
   read once for the group rather than repeated on every field inside it.
 
   The sameAs slot is the 3.3.7 Redundant Entry answer: when information has
   already been given elsewhere in the flow, offer it back instead of asking
-  for it again. Checking the box unmounts the fields — removing them from the
-  tab order, not just hiding them — and shows the previously entered values as
+  for it again. Checking the box unmounts the fields - removing them from the
+  tab order, not just hiding them - and shows the previously entered values as
   a summary, which a polite status region announces (4.1.3).
 
   Reuses .ds-check from SEL_CSS and .ds-field-hint / .ds-field-err / .ds-req

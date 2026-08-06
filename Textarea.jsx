@@ -1,5 +1,5 @@
 /*
-  Textarea — the Field shell (label / hint / error wiring, focus ring, shape
+  Textarea - the Field shell (label / hint / error wiring, focus ring, shape
   token) applied to a multi-line input, plus an optional character counter.
   The counter is described to the field, so focusing it announces the budget;
   a separate polite status region only speaks near the limit, so typing is
@@ -36,7 +36,7 @@ export function Textarea({
   const countId = showCount ? `${id}-count` : undefined;
   const describedBy = [hintId, countId, errId].filter(Boolean).join(" ") || undefined;
 
-  // Only near the limit — an empty string keeps the live region silent.
+  // Only near the limit - an empty string keeps the live region silent.
   const announce = remaining != null && remaining <= ANNOUNCE_AT
     ? (over ? `${-remaining} characters over the limit` : `${remaining} characters remaining`)
     : "";

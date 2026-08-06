@@ -1,5 +1,5 @@
 /*
-  Dev harness entry point. The library itself stays framework-agnostic — this
+  Dev harness entry point. The library itself stays framework-agnostic - this
   file exists only so `npm run dev` can mount the living style guide in a
   browser. Nothing in the components imports it.
 */

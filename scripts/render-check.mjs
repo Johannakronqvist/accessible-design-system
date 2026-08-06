@@ -1,5 +1,5 @@
 /*
-  Render smoke test — `npm run check`.
+  Render smoke test - `npm run check`.
 
   Compiling is not the same as running. This loads the real style guide through
   Vite's SSR pipeline and renders the whole component tree with react-dom/server,
@@ -7,7 +7,7 @@
   rendering, the lot. Then it asserts that the markup each component is supposed
   to emit is present, and fails on any React warning or error.
 
-  It does not run effects or simulate interaction — renderToString stops short of
+  It does not run effects or simulate interaction - renderToString stops short of
   both. Keyboard behaviour (the Select combobox, the password toggle) still needs
   a real browser or a jsdom test suite.
 */
@@ -83,7 +83,11 @@ const checks = [
   ["No hand-rolled ds-seg",  /^(?!.*class="ds-seg")/s],
   ["Modal native dialog",    /<dialog[^>]*class="ds-dialog modal/],
   ["Modal labelled by title",/<dialog[^>]*aria-labelledby=/],
-  ["Drawer edge-anchored",   /class="ds-dialog drawer [a-z]+ (left|right)"/],
+  // PINNED FOR MVP - the Drawer demo is commented out of StyleGuide.jsx, so this
+  // assertion has nothing to match. The component is still covered by the test
+  // suite ("drawer on both edges" / "is the same dialog, anchored to an edge");
+  // restore this line when the demo comes back.
+  // ["Drawer edge-anchored",   /class="ds-dialog drawer [a-z]+ (left|right)"/],
   ["Checkbox",               /ds-check-box/],
   ["Switch",                 /role="switch"/],
   ["Badge tones",            /ds-badge2/],

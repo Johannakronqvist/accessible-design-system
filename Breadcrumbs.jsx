@@ -1,10 +1,10 @@
 /*
-  Breadcrumbs — an ordered list inside a labelled nav landmark, because the
+  Breadcrumbs - an ordered list inside a labelled nav landmark, because the
   order is the information (2.4.8 Location). The current page is the last item
   and is not a link: it carries aria-current="page" and is rendered as plain
   text, so nobody tabs to a link that goes where they already are.
 
-  Separators are decorative and hidden from assistive tech — a screen reader
+  Separators are decorative and hidden from assistive tech - a screen reader
   announcing "slash" between every crumb is noise, since the list structure
   already conveys the sequence.
 

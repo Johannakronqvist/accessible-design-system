@@ -1,9 +1,9 @@
 /*
-  ToggleGroup — a segmented control for switching between mutually exclusive
+  ToggleGroup - a segmented control for switching between mutually exclusive
   options: a view, a density, a time range.
 
   It uses radiogroup semantics rather than a row of aria-pressed buttons,
-  because that is what the control actually is — one choice out of several,
+  because that is what the control actually is - one choice out of several,
   not several independent toggles. The practical difference for a keyboard
   user is large: a radiogroup is a single stop in the tab order with the
   arrows moving between options, so a five-option switcher costs one Tab

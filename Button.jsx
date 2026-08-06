@@ -1,5 +1,5 @@
 /*
-  Button — reads only from CSS variables (var(--accent-fill), var(--radius),
+  Button - reads only from CSS variables (var(--accent-fill), var(--radius),
   …), so it re-themes for free. Four variants × three sizes, icon-only,
   loading (sets aria-busy) and disabled states. Copy the component + its CSS
   block straight into your codebase.

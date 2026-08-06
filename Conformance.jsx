@@ -1,5 +1,5 @@
 /*
-  Conformance — the single source of truth for what the system satisfies (ok),
+  Conformance - the single source of truth for what the system satisfies (ok),
   partly supports (partial), or leaves to the app (app). It drives both the
   published accessibility statement and the automated test gate, so the claim
   made to auditors matches exactly what ships. Also houses the EAA-required
@@ -14,7 +14,7 @@ import { nextId } from "./id";
 // (partial), or leaves to the app (app). Drives the statement + test gate.
 export const CONFORMANCE = [
   {
-    area: "Foundation — tokens, applies to every component",
+    area: "Foundation - tokens, applies to every component",
     rows: [
       ["1.4.3", "Contrast (Minimum)", "AA", "ok", "Derived to ≥4.5:1 and re-checked whenever the brand color changes"],
       ["1.4.11", "Non-text Contrast", "AA", "ok", "--border-interactive and focus ring verified ≥3:1"],
@@ -76,7 +76,7 @@ export const CONFORMANCE = [
   {
     area: "Slider (range)",
     rows: [
-      ["2.5.7", "Dragging Movements", "AA", "ok", "Native range: arrows, Home/End, Page Up/Down and track clicks — no drag required"],
+      ["2.5.7", "Dragging Movements", "AA", "ok", "Native range: arrows, Home/End, Page Up/Down and track clicks - no drag required"],
       ["2.5.1", "Pointer Gestures", "A", "ok", "Single-pointer operation; no path-based gesture"],
       ["4.1.2", "Name, Role, Value", "A", "ok", "Native slider role with min, max, step and aria-valuetext"],
       ["2.5.8", "Target Size (Minimum)", "AA", "ok", "24px thumb"],
@@ -259,7 +259,53 @@ export const CONFORMANCE = [
     ],
   },
   {
-    area: "Your responsibility — content and context",
+    area: "Typography (Heading, Text)",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "level and size are separate props, so visual size never dictates the outline"],
+      ["2.4.10", "Section Headings", "AAA", "partial", "Real heading elements are emitted; choosing correct levels per page is yours"],
+      ["1.4.12", "Text Spacing", "AA", "ok", "Line height and measure set in relative units; no fixed-height text containers"],
+      ["1.4.4", "Resize Text", "AA", "ok", "Every step reads the generated scale, so text scales with the base size"],
+    ],
+  },
+  {
+    area: "Card",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "An optional title renders a real heading at the level you pass"],
+      ["1.4.11", "Non-text Contrast", "AA", "ok", "Surface and border meet the boundary requirement in light and dark"],
+      ["2.5.8", "Target Size (Minimum)", "AA", "app", "The card is a surface, not a control; keep controls inside it above the floor"],
+    ],
+  },
+  {
+    area: "Avatar",
+    rows: [
+      ["1.1.1", "Non-text Content", "A", "ok", "alt=\"\" by default beside a name; pass alt when the avatar is the only identification"],
+      ["1.4.3", "Contrast (Minimum)", "AA", "ok", "Initials use the verified tint / on-tint pairing"],
+    ],
+  },
+  {
+    area: "Spinner",
+    rows: [
+      ["4.1.3", "Status Messages", "AA", "ok", "role=status announces the label politely when it appears"],
+      ["1.1.1", "Non-text Content", "A", "ok", "The mark is aria-hidden; the label carries the meaning"],
+      ["2.3.3", "Animation from Interactions", "AAA", "ok", "Reduced motion stops the spin and reveals the label, so meaning survives"],
+    ],
+  },
+  {
+    area: "Divider",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "An hr when unlabelled; a named role=separator when labelled"],
+      ["1.1.1", "Non-text Content", "A", "ok", "The flanking rules are aria-hidden, so the label is announced once"],
+    ],
+  },
+  {
+    area: "VisuallyHidden",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "Clip technique keeps the text in the accessibility tree and reading order"],
+      ["4.1.2", "Name, Role, Value", "A", "ok", "Supplies the part of a name a sighted user gets from context"],
+    ],
+  },
+  {
+    area: "Your responsibility - content and context",
     rows: [
       ["1.1.1", "Non-text Content", "A", "app", "Provide alt text for meaningful images and icons"],
       ["1.3.1", "Info and Relationships", "A", "app", "Correct heading order and reading sequence per page"],
