@@ -27,6 +27,14 @@ export { Breadcrumbs } from "./Breadcrumbs";
 export { Pagination } from "./Pagination";
 export { Tabs } from "./Tabs";
 export { Accordion } from "./Accordion";
+export { Menu } from "./Menu";
+export { NavItem } from "./NavItem";
+export { Navbar } from "./Navbar";
+export { SideNav } from "./SideNav";
+export { ToggleGroup } from "./ToggleGroup";
+export { Modal, Drawer } from "./Modal";
+
+export { useDismissable } from "./useDismissable";
 
 export { Container, Stack, Cluster, Grid } from "./Layout";
 

@@ -9,7 +9,8 @@
   covers the behaviour, and conformance-setup.md §3 lists what stays manual.
 */
 
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { describe, test, expect } from "vitest";
 
@@ -32,6 +33,12 @@ import { Breadcrumbs } from "../Breadcrumbs";
 import { Pagination } from "../Pagination";
 import { Tabs } from "../Tabs";
 import { Accordion } from "../Accordion";
+import { Menu } from "../Menu";
+import { NavItem } from "../NavItem";
+import { Navbar } from "../Navbar";
+import { SideNav } from "../SideNav";
+import { ToggleGroup } from "../ToggleGroup";
+import { Modal, Drawer } from "../Modal";
 
 const clean = async (ui) => expect(await axe(render(ui).container)).toHaveNoViolations();
 
@@ -269,6 +276,108 @@ describe("Accordion", () => {
     await clean(<Accordion items={items} defaultOpen={["one"]} />);
     await clean(<Accordion items={items} allowMultiple defaultOpen={["one", "two"]} />);
     await clean(<Accordion items={items} headingLevel={2} />);
+  });
+});
+
+describe("Menu", () => {
+  const items = [
+    { value: "rename", label: "Rename" },
+    { value: "archive", label: "Archive", disabled: true },
+    { separator: true },
+    { value: "delete", label: "Delete", destructive: true },
+  ];
+  test("closed", async () => {
+    await clean(<Menu label="Actions" items={items} />);
+  });
+  test("open, including a disabled item and a separator", async () => {
+    const { container } = render(<Menu label="Actions" items={items} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: /Actions/ }));
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe("Navbar / NavItem", () => {
+  const items = [
+    { href: "#projects", label: "Projects" },
+    { href: "#team", label: "Team" },
+  ];
+  test("with a brand, actions and a current item", async () => {
+    await clean(
+      <Navbar brand="Acme" items={items} currentHref="#projects"
+        actions={<button type="button" className="ds-btn primary sm">New</button>} />
+    );
+  });
+  // Guards against the obvious-but-wrong build: an inline list plus a separate
+  // collapsed panel duplicates every link and yields two identically-named
+  // landmarks. One nav, repositioned by CSS, is why this passes.
+  test("with the collapsed nav open — still one landmark, one copy of each link", async () => {
+    const { container } = render(<Navbar brand="Acme" items={items} currentHref="#team" />);
+    await userEvent.setup().click(screen.getByRole("button", { name: "Menu" }));
+
+    expect(screen.getAllByRole("navigation")).toHaveLength(1);
+    expect(screen.getAllByRole("link", { name: "Team" })).toHaveLength(1);
+    expect(await axe(container)).toHaveNoViolations();
+  });
+  test("NavItem on its own, current and not", async () => {
+    await clean(<><NavItem href="#a" current>Active</NavItem><NavItem href="#b">Inactive</NavItem></>);
+  });
+});
+
+describe("SideNav", () => {
+  const groups = [
+    { label: "Workspace", items: [{ href: "#o", label: "Overview" }, { href: "#m", label: "Members" }] },
+    { label: "Account", items: [{ href: "#p", label: "Profile" }] },
+  ];
+  test("grouped, ungrouped, and with real headings", async () => {
+    await clean(<SideNav groups={groups} currentHref="#m" />);
+    await clean(<SideNav groups={[{ items: [{ href: "#a", label: "Only" }] }]} />);
+    await clean(<SideNav groups={groups} currentHref="#o" headingLevel={2} />);
+  });
+});
+
+describe("ToggleGroup", () => {
+  const options = [
+    { value: "board", label: "Board" },
+    { value: "list", label: "List" },
+  ];
+  test("every size, and with icon-only segments", async () => {
+    await clean(<ToggleGroup label="View" options={options} />);
+    await clean(<ToggleGroup label="View" options={options} size="sm" />);
+    await clean(<ToggleGroup label="View" options={options} size="lg" />);
+    await clean(
+      <ToggleGroup label="Mode" options={[
+        { value: "light", label: "", ariaLabel: "Light mode" },
+        { value: "dark", label: "", ariaLabel: "Dark mode" },
+      ]} />
+    );
+  });
+});
+
+describe("Modal / Drawer", () => {
+  test("open, with title, description, body and footer", async () => {
+    await clean(
+      <Modal open onClose={() => {}} title="Delete this project?"
+        description="This removes the project and its tasks for everyone."
+        footer={<Button variant="danger">Delete</Button>}>
+        <p>Body content.</p>
+      </Modal>
+    );
+  });
+
+  test("every size, and without a dismiss control", async () => {
+    await clean(<Modal open onClose={() => {}} title="Small" size="sm" />);
+    await clean(<Modal open onClose={() => {}} title="Large" size="lg" />);
+    await clean(<Modal open onClose={() => {}} title="No dismiss" showDismiss={false} />);
+  });
+
+  test("closed, and at another heading level", async () => {
+    await clean(<Modal open={false} onClose={() => {}} title="Hidden" />);
+    await clean(<Modal open onClose={() => {}} title="Deep" headingLevel={3} />);
+  });
+
+  test("drawer on both edges", async () => {
+    await clean(<Drawer open onClose={() => {}} title="Filters" placement="right" />);
+    await clean(<Drawer open onClose={() => {}} title="Filters" placement="left" />);
   });
 });
 

@@ -12,15 +12,20 @@ const ICON = { sm: 14, md: 16, lg: 18 };
 export function Button({
   variant = "primary", size = "md", loading = false, disabled = false,
   iconOnly = false, leftIcon: LI, rightIcon: RI, children, ariaLabel,
+  // type defaults to "button": a bare <button> inside a form submits it, which
+  // is almost never what a design-system button is being asked to do.
+  type = "button", ...rest
 }) {
   const cls = `ds-btn ${variant} ${size}${iconOnly ? " icon-only" : ""}`;
   const s = ICON[size];
   return (
     <button
+      type={type}
       className={cls}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       aria-label={ariaLabel}
+      {...rest}
     >
       {loading ? <Loader2 className="ds-spin" size={s} /> : LI ? <LI size={s} /> : null}
       {!iconOnly && children}

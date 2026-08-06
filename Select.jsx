@@ -9,6 +9,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, ChevronDown, AlertCircle } from "lucide-react";
 import { nextId } from "./id";
+import { useDismissable } from "./useDismissable";
 
 export function Select({ label, options = [], defaultValue, placeholder = "Select…", disabled = false, error, hint }) {
   const [id] = useState(() => nextId("ds-select"));
@@ -28,12 +29,14 @@ export function Select({ label, options = [], defaultValue, placeholder = "Selec
   useEffect(() => {
     if (open && optRefs.current[active]) optRefs.current[active].scrollIntoView({ block: "nearest" });
   }, [open, active]);
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, [open]);
+
+  // Outside-press only: focus never leaves the trigger here (the list is driven
+  // by aria-activedescendant), so Escape already arrives in onKeyDown below.
+  // Taking the document listener too would give two handlers one keypress.
+  useDismissable({
+    open, onDismiss: () => setOpen(false),
+    triggerRef: btnRef, contentRef: rootRef, escape: false,
+  });
 
   const openList = () => { if (!disabled) { setActive(Math.max(0, options.findIndex((o) => o.value === value))); setOpen(true); } };
   const close = (focus = true) => { setOpen(false); if (focus) btnRef.current?.focus(); };

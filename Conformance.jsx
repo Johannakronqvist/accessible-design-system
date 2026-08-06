@@ -190,6 +190,56 @@ export const CONFORMANCE = [
     ],
   },
   {
+    area: "Menu (menu button)",
+    rows: [
+      ["4.1.2", "Name, Role, Value", "A", "ok", "aria-haspopup=menu with role menu / menuitem and aria-expanded"],
+      ["2.1.1", "Keyboard", "A", "ok", "Arrows, Home / End, type-ahead, Enter / Space; Tab closes without trapping"],
+      ["2.4.3", "Focus Order", "A", "ok", "Focus moves into the menu and returns to the trigger on Escape or select"],
+      ["2.1.2", "No Keyboard Trap", "A", "ok", "Tab leaves the menu rather than cycling inside it"],
+      ["2.4.11", "Focus Not Obscured", "AA", "partial", "Menu opens adjacent; keep your layout from covering it"],
+    ],
+  },
+  {
+    area: "Navbar / NavItem",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "A banner header wrapping a labelled nav landmark and a list"],
+      ["4.1.2", "Name, Role, Value", "A", "ok", "The active item carries aria-current=page"],
+      ["1.4.1", "Use of Color", "A", "ok", "Active pairs accent with a weight step and an indicator bar"],
+      ["2.4.3", "Focus Order", "A", "ok", "The collapsed panel returns focus to its toggle on Escape"],
+      ["2.1.2", "No Keyboard Trap", "A", "ok", "The collapsed panel is a non-modal disclosure; Tab moves past it"],
+    ],
+  },
+  {
+    area: "SideNav",
+    rows: [
+      ["1.3.1", "Info and Relationships", "A", "ok", "One labelled nav; each group's list points at its own heading"],
+      ["4.1.2", "Name, Role, Value", "A", "ok", "The active item carries aria-current=page"],
+      ["1.4.1", "Use of Color", "A", "ok", "Active pairs accent with a weight step and a leading-edge bar"],
+      ["2.4.1", "Bypass Blocks", "A", "app", "Pair with SkipLink so the nav can be skipped on every page"],
+    ],
+  },
+  {
+    area: "ToggleGroup (segmented control)",
+    rows: [
+      ["4.1.2", "Name, Role, Value", "A", "ok", "radiogroup / radio with aria-checked, not a row of pressed buttons"],
+      ["2.1.1", "Keyboard", "A", "ok", "Arrows, Home / End; a roving tabindex keeps the group to one tab stop"],
+      ["1.4.1", "Use of Color", "A", "ok", "The selected segment pairs its fill with a weight step"],
+      ["2.5.8", "Target Size (Minimum)", "AA", "ok", "24px floor per segment, 44px at size=lg"],
+    ],
+  },
+  {
+    area: "Modal / Drawer",
+    rows: [
+      ["2.1.2", "No Keyboard Trap", "A", "ok", "Native dialog.showModal(); the browser owns the trap and releases it on close"],
+      ["2.4.3", "Focus Order", "A", "ok", "Focus enters the dialog and returns to the opener when it closes"],
+      ["2.4.11", "Focus Not Obscured (Minimum)", "AA", "ok", "Top-layer rendering; no ancestor's overflow, transform or z-index can clip it"],
+      ["4.1.2", "Name, Role, Value", "A", "ok", "Native dialog semantics; the title labels it via aria-labelledby"],
+      ["1.3.1", "Info and Relationships", "A", "ok", "Title is a real heading; the description is wired with aria-describedby"],
+      ["2.5.8", "Target Size (Minimum)", "AA", "ok", "24px dismiss control with a visible focus ring"],
+      ["1.4.10", "Reflow", "AA", "ok", "Capped at 92vw / 85vh and becomes a bottom sheet under 520px"],
+    ],
+  },
+  {
     area: "Badge / Tag",
     rows: [
       ["1.4.3", "Contrast (Minimum)", "AA", "ok", "Soft and solid tones verified ≥4.5:1 in light and dark"],

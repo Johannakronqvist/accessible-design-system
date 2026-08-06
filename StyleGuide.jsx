@@ -44,6 +44,12 @@ import { Breadcrumbs, BREADCRUMBS_CSS } from "./Breadcrumbs";
 import { Pagination, PAGINATION_CSS } from "./Pagination";
 import { Tabs, TABS_CSS } from "./Tabs";
 import { Accordion, ACCORDION_CSS } from "./Accordion";
+import { Menu, MENU_CSS } from "./Menu";
+import { NavItem, NAVITEM_CSS } from "./NavItem";
+import { Navbar, NAVBAR_CSS } from "./Navbar";
+import { SideNav, SIDENAV_CSS } from "./SideNav";
+import { ToggleGroup, TOGGLEGROUP_CSS } from "./ToggleGroup";
+import { Modal, Drawer, MODAL_CSS } from "./Modal";
 import { Select, SELECT_CSS } from "./Select";
 import { Checkbox, RadioGroup, Switch, SEL_CSS } from "./SelectionControls";
 import { Badge, TagDemo, BADGE_CSS } from "./Badge";
@@ -67,13 +73,8 @@ const GUIDE_CSS = `
 .ds-sectitle{font-family:var(--font-display);font-weight:500;font-size:20px;color:var(--text-1);margin:10px 0 18px}
 .ds-card{background:var(--surface);border:.5px solid var(--border);
   border-radius:min(calc(var(--radius) + 4px), 18px);padding:24px}
-.ds-seg{font-family:var(--font-body);font-size:13px;padding:6px 12px;border:.5px solid var(--border);
-  background:var(--surface);color:var(--text-2);cursor:pointer}
-.ds-seg:first-child{border-radius:8px 0 0 8px}
-.ds-seg:last-child{border-radius:0 8px 8px 0}
-.ds-seg:not(:first-child){border-left:none}
-.ds-seg[aria-pressed=true]{background:var(--text-1);color:var(--bg);border-color:var(--text-1)}
-.ds-grp{display:inline-flex}
+/* .ds-seg / .ds-grp retired — the guide's switchers are ToggleGroup now, which
+   gives them radiogroup semantics and arrow-key navigation for free. */
 .ds-swgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:14px}
 .ds-sw{display:flex;flex-direction:column;gap:7px}
 .ds-swbox{height:54px;border-radius:8px;border:.5px solid var(--border)}
@@ -133,6 +134,9 @@ export default function StyleGuide() {
   const [base, setBase] = useState(16);
   const [ratio, setRatio] = useState(1.2);
   const [unit, setUnit] = useState(8);
+  const [modal, setModal] = useState(null); // "confirm" | "drawer" | null
+  const [navAt, setNavAt] = useState("#projects");
+  const [sideAt, setSideAt] = useState("#members");
 
   useEffect(() => {
     const href =
@@ -192,7 +196,8 @@ export default function StyleGuide() {
     <div className="ds" style={vars}>
       <style>{GUIDE_CSS + BUTTON_CSS + FIELD_CSS + RESPONSIVE_CSS + CONF_CSS + SEL_CSS + SELECT_CSS + BADGE_CSS + ALERT_CSS
         + TEXTAREA_CSS + SEARCH_CSS + PASSWORD_CSS + SLIDER_CSS + FILEUPLOAD_CSS + NUMBER_CSS + FORMGROUP_CSS
-        + LINK_CSS + SKIPLINK_CSS + BREADCRUMBS_CSS + PAGINATION_CSS + TABS_CSS + ACCORDION_CSS}</style>
+        + LINK_CSS + SKIPLINK_CSS + BREADCRUMBS_CSS + PAGINATION_CSS + TABS_CSS + ACCORDION_CSS
+        + MENU_CSS + NAVITEM_CSS + NAVBAR_CSS + SIDENAV_CSS + TOGGLEGROUP_CSS + MODAL_CSS}</style>
       {/* First stop in the tab order — press Tab on load to reveal it (2.4.1). */}
       <SkipLink href="#ds-main" />
       <div className="ds-wrap">
@@ -208,10 +213,10 @@ export default function StyleGuide() {
             </p>
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <div className="ds-grp" role="group" aria-label="Mode">
-              <button className="ds-seg" aria-pressed={mode === "light"} onClick={() => setMode("light")} aria-label="Light mode"><Sun size={15} /></button>
-              <button className="ds-seg" aria-pressed={mode === "dark"} onClick={() => setMode("dark")} aria-label="Dark mode"><Moon size={15} /></button>
-            </div>
+            <ToggleGroup label="Mode" defaultValue="light" onChange={setMode} options={[
+              { value: "light", icon: Sun, ariaLabel: "Light mode" },
+              { value: "dark", icon: Moon, ariaLabel: "Dark mode" },
+            ]} />
           </div>
         </div>
 
@@ -245,37 +250,30 @@ export default function StyleGuide() {
                 </span>
               </div>
               {color && (
-                <button className="ds-seg" style={{ borderRadius: 8, display: "inline-flex", alignItems: "center", gap: 6 }}
-                  onClick={() => setColor(null)}><RotateCcw size={13} /> Reset</button>
+                <button type="button" className="ds-btn secondary sm" onClick={() => setColor(null)}>
+                  <RotateCcw size={13} aria-hidden="true" /> Reset
+                </button>
               )}
             </div>
             <div className="ds-ctrl" style={{ marginBottom: 18 }}>
               <label htmlFor="ds-base">Type</label>
               <input id="ds-base" type="range" min="14" max="20" step="1" value={base}
                 onChange={(e) => setBase(+e.target.value)} aria-label="Base font size" />
-              <div className="ds-grp" role="group" aria-label="Type ratio">
-                {[1.125, 1.2, 1.25].map((x) => (
-                  <button key={x} className="ds-seg" aria-pressed={ratio === x} onClick={() => setRatio(x)}>{x}</button>
-                ))}
-              </div>
+              <ToggleGroup label="Type ratio" size="sm" defaultValue={1.2} onChange={setRatio}
+                options={[1.125, 1.2, 1.25].map((x) => ({ value: x, label: String(x) }))} />
               <span className="ds-read">{base}px base · scale {fs.sm}–{fs.x3}</span>
             </div>
             <div className="ds-ctrl" style={{ marginBottom: 18 }}>
               <label>Spacing</label>
-              <div className="ds-grp" role="group" aria-label="Spacing base unit">
-                {[4, 6, 8].map((x) => (
-                  <button key={x} className="ds-seg" aria-pressed={unit === x} onClick={() => setUnit(x)}>{x}px</button>
-                ))}
-              </div>
+              <ToggleGroup label="Spacing base unit" size="sm" defaultValue={8} onChange={setUnit}
+                options={[4, 6, 8].map((x) => ({ value: x, label: `${x}px` }))} />
               <span className="ds-read">{unit}px base · {unit}–{unit * 8}px</span>
             </div>
             <div className="ds-ctrl">
               <label>Shape</label>
-              <div className="ds-grp" role="group" aria-label="Corner shape">
-                {[["Sharp", "4px"], ["Rounded", "10px"], ["Pill", "999px"]].map(([lab, v]) => (
-                  <button key={v} className="ds-seg" aria-pressed={shape === v} onClick={() => setShape(v)}>{lab}</button>
-                ))}
-              </div>
+              <ToggleGroup label="Corner shape" size="sm" defaultValue="10px" onChange={setShape}
+                options={[["Sharp", "4px"], ["Rounded", "10px"], ["Pill", "999px"]]
+                  .map(([lab, v]) => ({ value: v, label: lab }))} />
               <span className="ds-read">radius {shape === "999px" ? "pill" : shape}</span>
             </div>
           </div>
@@ -820,6 +818,218 @@ export default function StyleGuide() {
               Without it, the heading shortcut can't jump between sections and the page outline has a hole.
               headingLevel is a prop because the right level depends on where the accordion sits. Set
               allowMultiple to turn the accordion into independent disclosures.
+            </p>
+          </div>
+        </div>
+
+        {/* Navbar */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Navbar</div>
+          {/* No overflow:hidden here. It would clip the account menu — the exact
+              2.4.11 failure that popups in the normal stacking context suffer, and
+              the reason Modal is a native dialog in the top layer instead. */}
+          <div className="ds-card" style={{ padding: 0 }}>
+            <Navbar
+              brand={<><span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent-fill)" }} /> Acme</>}
+              currentHref={navAt}
+              onNavigate={(href, e) => { e.preventDefault(); setNavAt(href); }}
+              items={[
+                { href: "#projects", label: "Projects" },
+                { href: "#reports", label: "Reports" },
+                { href: "#team", label: "Team" },
+              ]}
+              actions={
+                <Menu label="Jane" size="sm" align="end" items={[
+                  { value: "profile", label: "Your profile", icon: Settings },
+                  { value: "settings", label: "Workspace settings" },
+                  { separator: true },
+                  { value: "signout", label: "Sign out", destructive: true },
+                ]} />
+              }
+            />
+          </div>
+          <p className="ds-hint">
+            A banner header wrapping a labelled nav landmark — labelled because a page usually has more than
+            one, and an unlabelled landmark list that reads “navigation, navigation, navigation” is useless.
+            The active item carries aria-current="page" plus a weight step and an underline, so it never
+            rests on colour — click between Projects, Reports and Team to watch it move. Narrow the window
+            below 768px and the links collapse behind a toggle.
+          </p>
+          <p className="ds-hint">
+            onNavigate(href, event) is what makes that work: without it the items are plain anchors and the
+            browser navigates, which is the right default; with it a router can preventDefault and push
+            instead. It also closes the collapsed row, since leaving it open would cover the page you just
+            asked for. SideNav takes the same prop.
+          </p>
+          <p className="ds-hint">
+            That collapsed panel is a <em>non-modal</em> disclosure, not a dialog: focus is not trapped and
+            the page behind stays reachable, which is right for a panel that pushes content down rather than
+            covering it. Escape closes it and returns focus to the toggle. A full-screen drawer that covers
+            the page would need a focus trap and an inert background — that is Modal's job, and this
+            component deliberately doesn't pretend to do it.
+          </p>
+        </div>
+
+        {/* Menu */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Menu</div>
+          <div className="ds-card">
+            <div className="ds-row">
+              <Menu label="Actions" items={[
+                { value: "rename", label: "Rename" },
+                { value: "duplicate", label: "Duplicate" },
+                { value: "archive", label: "Archive", disabled: true },
+                { separator: true },
+                { value: "delete", label: "Delete project", destructive: true },
+              ]} />
+              <Menu label="Sort" variant="ghost" items={[
+                { value: "name", label: "Name" },
+                { value: "created", label: "Date created" },
+                { value: "updated", label: "Last updated" },
+              ]} />
+            </div>
+            <p className="ds-hint">
+              This is not Select. A listbox picks a value and keeps focus on its trigger, driving the list
+              with aria-activedescendant; a menu fires actions, so real DOM focus moves onto each item and a
+              screen reader reads them as commands. Open with click, Enter, Space or ↓ — or ↑ to land on the
+              last item. Arrows, Home / End and type-ahead move; Escape or Tab dismiss, and focus returns to
+              the trigger. Disabled items keep their place and report aria-disabled rather than vanishing, so
+              the menu doesn't change shape under you.
+            </p>
+          </div>
+        </div>
+
+        {/* SideNav */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Side navigation</div>
+          <div className="ds-card">
+            <div style={{ maxWidth: 260 }}>
+              <SideNav currentHref={sideAt}
+                onNavigate={(href, e) => { e.preventDefault(); setSideAt(href); }}
+                groups={[
+                { label: "Workspace", items: [
+                  { href: "#overview", label: "Overview" },
+                  { href: "#members", label: "Members" },
+                  { href: "#billing", label: "Billing" },
+                ] },
+                { label: "Account", items: [
+                  { href: "#profile", label: "Profile" },
+                  { href: "#security", label: "Security" },
+                ] },
+              ]} />
+            </div>
+            <p className="ds-hint">
+              One nav landmark, not one per group. A landmark for every section would clog the landmark list,
+              so this renders a single labelled nav containing one list per group, each pointed at its own
+              heading with aria-labelledby — real structure without inventing landmarks. Group labels are
+              plain text rather than headings by default, since a sidebar's “Workspace” and “Account” usually
+              aren't part of the document outline; pass headingLevel when the sidebar genuinely is the page
+              structure.
+            </p>
+          </div>
+        </div>
+
+        {/* ToggleGroup */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Toggle group</div>
+          <div className="ds-card">
+            <Stack gap="18px">
+              <ToggleGroup label="View" defaultValue="board" options={[
+                { value: "board", label: "Board" },
+                { value: "list", label: "List" },
+                { value: "calendar", label: "Calendar" },
+              ]} />
+              <ToggleGroup label="Range" size="sm" defaultValue="30" options={[
+                { value: "7", label: "7 days" },
+                { value: "30", label: "30 days" },
+                { value: "90", label: "90 days" },
+              ]} />
+              <ToggleGroup label="Density" size="lg" defaultValue="cozy" options={[
+                { value: "compact", label: "Compact" },
+                { value: "cozy", label: "Cozy" },
+              ]} />
+            </Stack>
+            <p className="ds-hint">
+              Radiogroup semantics rather than a row of aria-pressed buttons, because that is what the
+              control is — one choice out of several, not several independent toggles. The keyboard
+              difference is the real payoff: a roving tabindex makes the group a single stop in the tab
+              order with the arrows moving between options, so a five-option switcher costs one Tab instead
+              of five. The four switchers at the top of this page are this component — arrow through them.
+            </p>
+          </div>
+        </div>
+
+        {/* Modal */}
+        <div className="ds-section">
+          <span className="ds-label">Component</span>
+          <div className="ds-sectitle">Modal and Drawer</div>
+          <div className="ds-card">
+            <div className="ds-row">
+              <Button onClick={() => setModal("confirm")}>Delete project…</Button>
+              <Button variant="secondary" onClick={() => setModal("drawer")}>Open drawer…</Button>
+            </div>
+
+            <Modal
+              open={modal === "confirm"} onClose={() => setModal(null)}
+              title="Delete this project?" size="sm"
+              description="This removes the project and its 42 tasks for everyone on the team. It cannot be undone."
+              footer={
+                <>
+                  <Button variant="secondary" onClick={() => setModal(null)}>Cancel</Button>
+                  <Button variant="danger" onClick={() => setModal(null)}>Delete project</Button>
+                </>
+              }
+            />
+
+            <Drawer
+              open={modal === "drawer"} onClose={() => setModal(null)}
+              title="Filters" placement="right" size="sm"
+              description="A drawer is the same dialog, anchored to an edge instead of centred."
+              footer={<Button onClick={() => setModal(null)}>Apply filters</Button>}
+            >
+              <Stack gap="18px">
+                <Checkbox label="Only my projects" defaultChecked />
+                <Checkbox label="Archived" />
+                {/* Deliberately not a Select here: a popup inside a scrollable
+                    dialog body gets clipped. See the note below the demo. */}
+                <ToggleGroup label="Status" size="sm" defaultValue="active" options={[
+                  { value: "active", label: "Active" },
+                  { value: "paused", label: "Paused" },
+                ]} />
+              </Stack>
+            </Drawer>
+
+            <p className="ds-hint">
+              Both are a native <span className="ds-mono">&lt;dialog&gt;</span> opened with{" "}
+              <span className="ds-mono">showModal()</span>, which is the whole point: the browser supplies a
+              real focus trap, an inert background — content behind is unreachable by keyboard and hidden
+              from assistive tech, with no aria-hidden bookkeeping — Escape to dismiss, and focus returning
+              to whatever opened it. Tab around inside one and you will not get out.
+            </p>
+            <p className="ds-hint">
+              The quieter win is top-layer rendering. A hand-rolled div modal sits in the normal stacking
+              context, so any ancestor with overflow:hidden, a transform or a competing z-index can clip it —
+              a common and hard-to-spot 2.4.11 failure. A dialog in the top layer cannot be clipped by
+              anything, which is why Modal claims 2.4.11 outright where Select only claims it in part.
+            </p>
+            <p className="ds-hint">
+              The same trade as Slider comes with it: jsdom implements neither showModal() nor the top layer,
+              so the trap and the inert background are verified by hand rather than in CI. The suite covers
+              what is ours — labelling, initial focus, scroll lock, backdrop dismissal, and keeping React
+              state in step with the browser's own close.
+            </p>
+            <p className="ds-hint">
+              <strong style={{ color: "var(--text-1)", fontWeight: 500 }}>Known limitation.</strong> The
+              dialog itself is in the top layer, but a <em>popup inside it</em> is not: Select's listbox or
+              Menu's list, opened within the scrollable dialog body, is clipped by that scroll container.
+              The same is true inside an Accordion panel. This is the 2.4.11 gap those two components
+              already record as partial, and it is why the drawer above uses a ToggleGroup rather than a
+              Select. Fixing it properly means CSS anchor positioning or portalling the popup — worth doing,
+              not yet done.
             </p>
           </div>
         </div>

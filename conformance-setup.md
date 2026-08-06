@@ -53,11 +53,21 @@ test("at a bound the button reports aria-disabled but keeps its place in the tab
 });
 ```
 
-**What jsdom cannot reach.** Arrow / Home / End on a range input, and the browser's
-native track-click, are implemented by the browser rather than by the component —
-which is the whole argument for building `Slider` on a native range. jsdom has no
-such implementation, so those keys are verified manually (§3), not here. The suite
-asserts the element genuinely is a native range instead.
+**What jsdom cannot reach.** Two components deliberately delegate behaviour to the
+browser, which is exactly why they are accessible — and exactly why the suite
+cannot prove it:
+
+- **`Slider`** is a native `range`. Arrow / Home / End and track-click are the
+  browser's, so the suite asserts the element genuinely *is* a native range and
+  leaves the keys to §3.
+- **`Modal` / `Drawer`** are a native `<dialog>` opened with `showModal()`. The
+  focus trap, the inert background and top-layer rendering are all the browser's.
+  jsdom implements none of them — `showModal()` is undefined — so `test/setup.js`
+  stubs it just far enough for React's logic to run and axe to inspect an open
+  dialog. **Do not write a test that appears to verify the trap**: it would be
+  asserting the stub. The suite covers what is ours — labelling, initial focus,
+  scroll lock, backdrop dismissal, and keeping React state in step with the
+  browser's own close.
 
 ### c. Lint with eslint-plugin-jsx-a11y
 
@@ -115,6 +125,13 @@ Roughly half of WCAG can't be verified by tools. Before a release, walk this lis
 
 - **Keyboard only** — every action reachable and operable, visible focus, logical order,
   no traps.
+- **Dialogs** — with a `Modal` or `Drawer` open: Tab and Shift+Tab cycle *within* it and
+  never reach the page behind (2.1.2); a screen reader cannot read the background;
+  Escape closes it and focus returns to the control that opened it (2.4.3); and the
+  dialog is not clipped when its trigger sits inside a scrolling or transformed
+  ancestor (2.4.11). All four are browser-supplied and none are covered by CI.
+- **Sliders** — arrows, Home / End and Page Up / Down move the value, and clicking the
+  track jumps to it, with no dragging required (2.5.7).
 - **Screen reader** — test one desktop (NVDA or VoiceOver) and one mobile (VoiceOver or
   TalkBack); names, roles, and error announcements make sense.
 - **Zoom & reflow** — 400% zoom and a 320px width with no loss of content or 2D scrolling
