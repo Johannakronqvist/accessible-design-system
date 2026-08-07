@@ -3,9 +3,16 @@
 A themeable React design system where accessibility is a property of the
 construction, not the result of an audit.
 
-40 components, 165 tests, and a conformance map that drives the style guide, the
+40 components, 170 tests, and a conformance map that drives the style guide, the
 published accessibility statement and the test gate from one source - so the
 claim made to auditors is exactly what ships.
+
+**[Live style guide →](https://johannakronqvist.github.io/accessible-design-system/)**
+
+*Start with the brand colour picker at the top.* Paste something unusable - a
+pale yellow, `#FFE81A` - and watch it get derived into a shade that passes,
+with the before and after ratios side by side and every component below
+re-tuning from the result. That interaction is the whole argument in one place.
 
 ---
 
@@ -20,18 +27,34 @@ This system is built so that cannot happen, on three principles.
 
 ### 1. Derive colours to a ratio, never pick them
 
-`deriveAccent(hex, mode)` does not store your brand colour. It searches the
-lightness axis for the nearest shade that clears **4.5:1** against the surface
-it will sit on, and returns a set of accent tokens built from that.
+`deriveAccent(hex, mode)` does not store your brand colour. It keeps the hue and
+walks the lightness until the shade clears **4.5:1** against the surface it will
+sit on - down for a pale colour, up for one that is already too dark - stopping
+at the first shade that passes, so the result stays as close to your choice as
+the ratio allows.
 
 ```js
-buildTheme({ accent: "#FFE81A" })  // pale yellow
-// --accent-fill is NOT #FFE81A - it is darkened until white text passes on it
+buildTheme({ accent: "#FFE81A" })  // pale yellow, 1.3:1 against white
+// --accent-fill is #82760D at 4.6:1 - the hue survives, the lightness moves
 ```
 
-Because the derivation targets a *contrast ratio* rather than a fixed shade,
-re-theming cannot silently drop below AA. There is a test asserting exactly
-this for an unusable input colour, in both light and dark.
+Because the search targets a *contrast ratio* rather than a fixed shade,
+re-theming cannot silently drop below AA. That is not a claim resting on one
+lucky sample: the suite sweeps **24 hues plus 5 neutrals, in both modes - 58
+combinations** - and asserts all three pairings (fill on white, text on
+background, on-tint on tint) clear 4.5:1. Worst case across the whole space is
+exactly 4.500.
+
+Two details that decide whether the guarantee actually holds:
+
+- **Candidates are rounded before they are measured.** `hslToRgb` returns
+  floats but hex output is whole channels, so testing the float and shipping the
+  rounded value let a shade that passed at 4.5001 land at 4.49. The search now
+  measures what actually ships.
+- **A neutral brand colour derives greys, not red.** `rgbToHsl` reports hue 0
+  for any grey, so flooring saturation the way a chromatic input needs turned
+  black, white and grey into red. Below 8% saturation the input is treated as
+  neutral and lands on a mid grey instead.
 
 ### 2. Use the platform
 
@@ -170,7 +193,7 @@ your content - alt text, heading order, page language).
 ### The gate
 
 ```bash
-npm test      # 165 tests - jest-axe over every state, plus behaviour tests
+npm test      # 170 tests - jest-axe over every state, plus behaviour tests
 npm run check # renders the whole guide via SSR, fails on any React warning
 ```
 

@@ -55,23 +55,44 @@ export function contrast(a, b) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+/*
+  Below this saturation the input has no meaningful hue. rgbToHsl reports h=0
+  for any grey, because the hue branch only runs when the channels differ - so
+  flooring saturation the way a chromatic input needs would turn black, white
+  and any grey into red. Treated as neutral instead, they derive greys.
+*/
+const NEUTRAL_S = 0.08;
+
 // Snap any brand color to accessible accent tokens for the given mode (target AA 4.5).
 export function deriveAccent(hex, mode) {
   const { h, s } = rgbToHsl(...hexToRgb(hex));
-  const sat = Math.min(0.82, Math.max(0.4, s));
   const dark = mode === "dark";
+  const neutral = s < NEUTRAL_S;
+  // A chromatic input gets saturation floored so the accent reads as a brand
+  // color; a neutral one gets zero, so the result stays on the grey axis.
+  const sat = neutral ? 0 : Math.min(0.82, Math.max(0.4, s));
+  // The tint saturations are fixed rather than derived, so they need the same
+  // branch - otherwise a grey brand color still gets a pink tint.
+  const tintSat = neutral ? 0 : (dark ? 0.34 : 0.5);
   const bg = dark ? [27, 22, 24] : [252, 248, 245];
   const white = [255, 255, 255], T = 4.5;
-  const down = (sm, from, ok) => { for (let l = from; l >= 6; l--) { const c = hslToRgb(h, sat * sm, l / 100); if (ok(c)) return c; } return hslToRgb(h, sat, from / 100); };
-  const up = (sm, from, ok) => { for (let l = from; l <= 94; l++) { const c = hslToRgb(h, sat * sm, l / 100); if (ok(c)) return c; } return hslToRgb(h, sat, from / 100); };
+  /*
+    Round each candidate to whole channels before measuring it. hslToRgb returns
+    floats, but rgbToHex rounds on the way out - so testing the float and
+    shipping the rounded value let a shade that passed at 4.5001 land at 4.49.
+    Measuring what actually ships is the only way the >=4.5 guarantee holds.
+  */
+  const snap = (c) => [Math.round(c[0]), Math.round(c[1]), Math.round(c[2])];
+  const down = (sm, from, ok) => { for (let l = from; l >= 6; l--) { const c = snap(hslToRgb(h, sat * sm, l / 100)); if (ok(c)) return c; } return snap(hslToRgb(h, sat, from / 100)); };
+  const up = (sm, from, ok) => { for (let l = from; l <= 94; l++) { const c = snap(hslToRgb(h, sat * sm, l / 100)); if (ok(c)) return c; } return snap(hslToRgb(h, sat, from / 100)); };
   const fill = down(1, dark ? 66 : 58, (c) => contrast(white, c) >= T);
   const text = dark ? up(0.7, 58, (c) => contrast(c, bg) >= T) : down(1, 52, (c) => contrast(c, bg) >= T);
-  const tint = dark ? hslToRgb(h, 0.34, 0.17) : hslToRgb(h, 0.5, 0.94);
+  const tint = dark ? hslToRgb(h, tintSat, 0.17) : hslToRgb(h, tintSat, 0.94);
   const onTint = dark ? up(0.5, 70, (c) => contrast(c, tint) >= T) : down(1, 48, (c) => contrast(c, tint) >= T);
   const fh = rgbToHsl(...fill);
   const hov = dark ? hslToRgb(fh.h, fh.s, Math.min(0.74, fh.l + 0.08)) : hslToRgb(fh.h, fh.s, Math.max(0.05, fh.l - 0.07));
   const act = dark ? hslToRgb(fh.h, fh.s, Math.min(0.82, fh.l + 0.15)) : hslToRgb(fh.h, fh.s, Math.max(0.03, fh.l - 0.13));
-  const tintHov = dark ? hslToRgb(h, 0.34, 0.22) : hslToRgb(h, 0.5, 0.9);
+  const tintHov = dark ? hslToRgb(h, tintSat, 0.22) : hslToRgb(h, tintSat, 0.9);
   const H = rgbToHex;
   return {
     "--accent-fill": H(fill), "--accent-fill-hover": H(hov), "--accent-fill-active": H(act),

@@ -1242,6 +1242,63 @@ describe("buildTheme - the pure token assembly", () => {
     expect(contrast([255, 255, 255], hexToRgb(vars["--accent-fill"]))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(hexToRgb(vars["--accent-text"]), hexToRgb(vars["--bg"]))).toBeGreaterThanOrEqual(4.5);
   });
+
+  // The headline claim, tested across the whole input space rather than one
+  // lucky sample: no colour anyone can type drops the system below AA.
+  test("every hue, and neutrals, clear 4.5:1 in both modes", () => {
+    const hues = Array.from({ length: 24 }, (_, i) => i * 15);
+    const inputs = ["#000000", "#FFFFFF", "#808080", "#3A3A3A", "#F5F5F5"];
+    for (const h of hues) {
+      // hsl(h, 70%, 50%) as hex, to sample right around the colour wheel.
+      const c = 0.7 * (1 - Math.abs(2 * 0.5 - 1)) || 0.7;
+      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+      const m = 0.5 - c / 2;
+      const t = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][Math.floor(h / 60) % 6];
+      inputs.push("#" + t.map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join(""));
+    }
+
+    for (const mode of ["light", "dark"]) {
+      for (const accent of inputs) {
+        const { vars } = buildTheme({ accent, mode });
+        const bg = hexToRgb(vars["--bg"]);
+        expect(contrast([255, 255, 255], hexToRgb(vars["--accent-fill"])),
+          `${accent} ${mode} fill`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(hexToRgb(vars["--accent-text"]), bg),
+          `${accent} ${mode} text`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(hexToRgb(vars["--accent-on-tint"]), hexToRgb(vars["--accent-tint"])),
+          `${accent} ${mode} on-tint`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  // Regression: rgbToHsl reports h=0 for any grey, so flooring saturation the
+  // way a chromatic input needs turned black, white and grey into red.
+  test("a neutral brand colour derives greys, not red", () => {
+    const grey = (hex) => {
+      const [r, g, b] = hexToRgb(hex);
+      return Math.max(r, g, b) - Math.min(r, g, b) <= 3;
+    };
+    for (const accent of ["#000000", "#FFFFFF", "#808080", "#3A3A3A"]) {
+      const { vars } = buildTheme({ accent });
+      expect(grey(vars["--accent-fill"]), `${accent} fill`).toBe(true);
+      expect(grey(vars["--accent-tint"]), `${accent} tint`).toBe(true);
+      expect(grey(vars["--accent-text"]), `${accent} text`).toBe(true);
+    }
+  });
+
+  test("neutrals land on a mid grey rather than pure black", () => {
+    const { vars } = buildTheme({ accent: "#000000" });
+    const [r] = hexToRgb(vars["--accent-fill"]);
+    expect(r).toBeGreaterThan(0x60);
+    expect(r).toBeLessThan(0x90);
+  });
+
+  test("a near-neutral with real warmth keeps its hue", () => {
+    // 13% saturation is above the neutral threshold, so this stays warm.
+    const { vars } = buildTheme({ accent: "#2A2320" });
+    const [r, , b] = hexToRgb(vars["--accent-fill"]);
+    expect(r).toBeGreaterThan(b);
+  });
 });
 
 describe("ThemeProvider", () => {
