@@ -55,6 +55,27 @@ export const FIELD_CSS = `
 .ds-field-err{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);color:var(--danger)}
 /* .ds-sr lives in VISUALLYHIDDEN_CSS - it was defined here and in LINK_CSS with
    nothing keeping the copies in step. Include that block alongside this one. */
-.ds-color-in{width:44px;height:44px;padding:0;border:1.5px solid var(--border-interactive);
-  border-radius:var(--radius);background:none;cursor:pointer}
+/*
+  Color input. A native input[type=color] paints its swatch through a wrapper
+  that carries browser-default padding, and the swatch has its own border and
+  corner shape - so the fill sits inset from the border you draw, with a gap
+  and a mismatched curve. Those internals have to be reset explicitly; the
+  vendor pseudo-elements cannot be combined into one rule, because an
+  unrecognised selector in a list drops the whole rule.
+
+  The inner radius is the outer minus the border width, so the two curves stay
+  concentric at every shape setting instead of drifting apart at the corners.
+*/
+.ds-color-in{-webkit-appearance:none;appearance:none;
+  width:44px;height:44px;padding:0;box-sizing:border-box;overflow:hidden;
+  border:1.5px solid var(--border-interactive);border-radius:var(--radius);
+  background:none;cursor:pointer;transition:border-color .12s,box-shadow .12s}
+.ds-color-in::-webkit-color-swatch-wrapper{padding:0;border-radius:inherit}
+.ds-color-in::-webkit-color-swatch{border:none;border-radius:max(0px,calc(var(--radius) - 1.5px))}
+.ds-color-in::-moz-color-swatch{border:none;border-radius:max(0px,calc(var(--radius) - 1.5px))}
+.ds-color-in:hover{border-color:var(--text-2)}
+/* It had no focus style at all before - a real 2.4.7 gap on a real control. */
+.ds-color-in:focus-visible{outline:none;border-color:var(--accent-text);
+  box-shadow:0 0 0 3px var(--accent-tint)}
+@media (prefers-reduced-motion:reduce){.ds-color-in{transition:none}}
 `;

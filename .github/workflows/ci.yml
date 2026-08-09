@@ -1,0 +1,36 @@
+# Runs the accessibility gate on every push and pull request.
+#
+# No deploy step: the style guide is served from johannakronqvist.com rather
+# than GitHub Pages. This exists so the repo carries a visible, honest signal
+# that the gate the README describes actually runs - 170 tests plus the SSR
+# render check, which fails on any React warning.
+
+name: Accessibility gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tests (jest-axe + behaviour)
+        run: npm test
+
+      - name: Render check (SSR, fails on any React warning)
+        run: npm run check
+
+      - name: Build
+        run: npm run build

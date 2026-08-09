@@ -4,10 +4,11 @@ import react from "@vitejs/plugin-react";
 export default defineConfig(({ command }) => ({
   plugins: [react()],
 
-  // GitHub Pages serves this repo from /accessible-design-system/, so built
-  // asset URLs need that prefix. Only on build: the dev server stays at / so
-  // http://localhost:5173 keeps working unchanged.
-  base: command === "build" ? "/accessible-design-system/" : "/",
+  // Relative asset URLs, so the built dist/ folder works wherever it is dropped:
+  // /design-system/, /work/10/playground/, a subfolder on any static host. The
+  // app has no client-side routing, so there is no path for relative URLs to
+  // break against. Dev stays at / so localhost:5173 is unchanged.
+  base: command === "build" ? "./" : "/",
 
   server: { port: 5173 },
   test: {

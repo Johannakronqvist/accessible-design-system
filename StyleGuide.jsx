@@ -130,6 +130,13 @@ const GUIDE_CSS = `
 .ds-box{background:var(--accent-tint);border:.5px solid var(--border);border-radius:6px}
 .ds-main{outline:none}
 .ds-main:focus-visible{box-shadow:0 0 0 3px var(--ring);border-radius:min(var(--radius),8px)}
+/* Conformance disclosure triggers: name on the left, criterion count and any
+   non-ok statuses on the right, so a closed section still says what is in it. */
+.ds-conf-trigger{display:flex;align-items:center;justify-content:space-between;
+  gap:12px;width:100%;flex-wrap:wrap}
+.ds-conf-meta{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+  font-weight:400;color:var(--text-2)}
 .ds-derive{display:flex;flex-wrap:wrap;align-items:stretch;gap:12px}
 .ds-derive-cell{display:flex;flex-direction:column;gap:6px;flex:1;min-width:150px;
   padding:12px 14px;background:var(--bg);border:.5px solid var(--border);
@@ -306,58 +313,85 @@ export default function StyleGuide() {
           <div className="ds-section">
             <span className="ds-label">Foundations</span>
             <div className="ds-sectitle">Getting started</div>
-            <div className="ds-card">
-              <p
-                style={{
-                  fontSize: "var(--fs-base)",
-                  color: "var(--text-1)",
-                  lineHeight: 1.65,
-                  margin: "0 0 16px",
-                  maxWidth: "62ch",
-                }}
-              >
-                Wrap your app in <span className="ds-mono">ThemeProvider</span>.
-                That is the setup - it puts every CSS custom property the
-                components read onto the element it renders, and everything
-                below inherits them.
-              </p>
-              <pre className="ds-code">{`import { ThemeProvider, Button } from "./design-system";
+
+            {/* The setup snippet stays out in the open - it is the one thing a
+                newcomer needs and hiding it behind a click helps nobody. The
+                reference detail below it folds away. */}
+            <p
+              style={{
+                fontSize: "var(--fs-base)",
+                color: "var(--text-1)",
+                lineHeight: 1.65,
+                margin: "0 0 14px",
+                maxWidth: "62ch",
+              }}
+            >
+              Wrap your app in <span className="ds-mono">ThemeProvider</span>.
+              That is the setup - it puts every CSS custom property the
+              components read onto the element it renders, and everything below
+              inherits them.
+            </p>
+            <pre className="ds-code" style={{ marginBottom: 14 }}>{`import { ThemeProvider, Button } from "./design-system";
 
 <ThemeProvider mode="system" accent="#2E6F5E" loadFonts>
   <Button>Save changes</Button>
 </ThemeProvider>`}</pre>
-              <p className="ds-hint">
-                <span className="ds-mono">mode</span> takes "light", "dark" or
-                "system" - system follows prefers-color-scheme and keeps
-                following it. <span className="ds-mono">accent</span> is snapped
-                to accessible shades rather than used raw, so branding cannot
-                silently drop below AA; the controls below are those same props.{" "}
-                <span className="ds-mono">radius</span>,{" "}
-                <span className="ds-mono">baseSize</span>,{" "}
-                <span className="ds-mono">ratio</span> and{" "}
-                <span className="ds-mono">spacingUnit</span> drive shape, type
-                and density.
-              </p>
-              <p className="ds-hint">
-                <span className="ds-mono">loadFonts</span> is off by default.
-                Injecting a Google Fonts link makes a third-party request on the
-                host application's behalf, which is a privacy and CSP decision
-                belonging to the app, not to a component it imported - so it is
-                opt-in. Self-host instead and override{" "}
-                <span className="ds-mono">--font-display</span> and{" "}
-                <span className="ds-mono">--font-body</span>.
-              </p>
-              <p className="ds-hint">
-                Need the variables somewhere React cannot reach -{" "}
-                <span className="ds-mono">:root</span>, a global stylesheet, a
-                server-rendered style attribute?{" "}
-                <span className="ds-mono">buildTheme()</span> is the same
-                assembly as a pure function, with no React and no DOM.{" "}
-                <span className="ds-mono">useTheme()</span> hands the resolved
-                tokens to any descendant that needs a value in JS rather than
-                CSS.
-              </p>
-            </div>
+
+            <Accordion
+              allowMultiple
+              headingLevel={3}
+              items={[
+                {
+                  value: "props",
+                  label: "What each prop does",
+                  content: (
+                    <>
+                      <span className="ds-mono">mode</span> takes "light", "dark"
+                      or "system" - system follows prefers-color-scheme and keeps
+                      following it. <span className="ds-mono">accent</span> is
+                      snapped to accessible shades rather than used raw, so
+                      branding cannot silently drop below AA; the controls below
+                      are those same props.{" "}
+                      <span className="ds-mono">radius</span>,{" "}
+                      <span className="ds-mono">baseSize</span>,{" "}
+                      <span className="ds-mono">ratio</span> and{" "}
+                      <span className="ds-mono">spacingUnit</span> drive shape,
+                      type and density.
+                    </>
+                  ),
+                },
+                {
+                  value: "fonts",
+                  label: "Why loadFonts is off by default",
+                  content: (
+                    <>
+                      Injecting a Google Fonts link makes a third-party request
+                      on the host application's behalf, which is a privacy and
+                      CSP decision belonging to the app, not to a component it
+                      imported - so it is opt-in. Self-host instead and override{" "}
+                      <span className="ds-mono">--font-display</span> and{" "}
+                      <span className="ds-mono">--font-body</span>.
+                    </>
+                  ),
+                },
+                {
+                  value: "outside",
+                  label: "Using the tokens outside React",
+                  content: (
+                    <>
+                      Need the variables somewhere React cannot reach -{" "}
+                      <span className="ds-mono">:root</span>, a global
+                      stylesheet, a server-rendered style attribute?{" "}
+                      <span className="ds-mono">buildTheme()</span> is the same
+                      assembly as a pure function, with no React and no DOM.{" "}
+                      <span className="ds-mono">useTheme()</span> hands the
+                      resolved tokens to any descendant that needs a value in JS
+                      rather than CSS.
+                    </>
+                  ),
+                },
+              ]}
+            />
           </div>
 
           {/* Theme controls */}
@@ -2116,38 +2150,61 @@ export default function StyleGuide() {
                 published accessibility statement, so the claim you make to
                 auditors and buyers matches exactly what ships.
               </p>
-              {CONFORMANCE.map((area) => (
-                <div
-                  key={area.area}
-                  style={{ overflowX: "auto", marginBottom: 24 }}
-                >
-                  <table className="ds-table">
-                    <caption>{area.area}</caption>
-                    <thead>
-                      <tr>
-                        <th scope="col">Criterion</th>
-                        <th scope="col">Level</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">How</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {area.rows.map(([cid, name, level, status, how]) => (
-                        <tr key={cid + name}>
-                          <td>
-                            <span className="ds-crit">{cid}</span> {name}
-                          </td>
-                          <td>{level}</td>
-                          <td>
-                            <StatusBadge s={status} />
-                          </td>
-                          <td style={{ color: "var(--text-2)" }}>{how}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ))}
+              {/* One area per disclosure rather than 30 stacked tables. The
+                  trigger carries the criterion count and any non-ok statuses,
+                  so the parts that need attention are findable while closed -
+                  a collapsed section that hides its own summary is worse than
+                  the wall of text it replaced. */}
+              <Accordion
+                allowMultiple
+                headingLevel={3}
+                items={CONFORMANCE.map((area) => {
+                  const partial = area.rows.filter((r) => r[3] === "partial").length;
+                  const app = area.rows.filter((r) => r[3] === "app").length;
+                  return {
+                    value: area.area,
+                    label: (
+                      <span className="ds-conf-trigger">
+                        <span>{area.area}</span>
+                        <span className="ds-conf-meta">
+                          <span>{area.rows.length} criteria</span>
+                          {partial > 0 && <StatusBadge s="partial" />}
+                          {app > 0 && <StatusBadge s="app" />}
+                        </span>
+                      </span>
+                    ),
+                    content: (
+                      <div style={{ overflowX: "auto" }}>
+                        <table className="ds-table">
+                          <caption className="ds-sr">{area.area}</caption>
+                          <thead>
+                            <tr>
+                              <th scope="col">Criterion</th>
+                              <th scope="col">Level</th>
+                              <th scope="col">Status</th>
+                              <th scope="col">How</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {area.rows.map(([cid, name, level, status, how]) => (
+                              <tr key={cid + name}>
+                                <td>
+                                  <span className="ds-crit">{cid}</span> {name}
+                                </td>
+                                <td>{level}</td>
+                                <td>
+                                  <StatusBadge s={status} />
+                                </td>
+                                <td style={{ color: "var(--text-2)" }}>{how}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ),
+                  };
+                })}
+              />
               <p className="ds-hint">
                 Ships with two repo files: an accessibility-statement template
                 you publish, and a setup guide that wires axe / jest-axe and

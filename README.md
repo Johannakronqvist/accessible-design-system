@@ -7,7 +7,7 @@ construction, not the result of an audit.
 published accessibility statement and the test gate from one source - so the
 claim made to auditors is exactly what ships.
 
-**[Live style guide →](https://johannakronqvist.github.io/accessible-design-system/)**
+**[Live style guide →](https://johannakronqvist.com/design-system/)**
 
 *Start with the brand colour picker at the top.* Paste something unusable - a
 pale yellow, `#FFE81A` - and watch it get derived into a shade that passes,
@@ -88,6 +88,11 @@ change rather than a second implementation.
 npm install
 npm run dev      # the living style guide at http://localhost:5173
 ```
+
+`npm run build` emits `dist/` with **relative** asset URLs, so the folder is
+portable: drop it at any path on any static host and it works, with no base
+path to configure. The guide has no client-side routing, so there is nothing
+for relative URLs to break against.
 
 Wrap your app once. That is the entire setup:
 
