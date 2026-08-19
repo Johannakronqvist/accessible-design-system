@@ -17,7 +17,13 @@ import { useState } from "react";
 import { nextId } from "./id";
 import { NavItem } from "./NavItem";
 
-export function SideNav({ groups = [], currentHref, onNavigate, label = "Sections", headingLevel }) {
+export function SideNav({
+  groups = [],
+  currentHref,
+  onNavigate,
+  label = "Sections",
+  headingLevel,
+}) {
   const [id] = useState(() => nextId("ds-sidenav"));
   const Heading = headingLevel ? `h${headingLevel}` : "div";
 
@@ -28,7 +34,9 @@ export function SideNav({ groups = [], currentHref, onNavigate, label = "Section
         return (
           <div key={group.label || gi} className="ds-sidenav-group">
             {group.label && (
-              <Heading id={headingId} className="ds-sidenav-grouplabel">{group.label}</Heading>
+              <Heading id={headingId} className="ds-sidenav-grouplabel">
+                {group.label}
+              </Heading>
             )}
             <ul
               className="ds-sidenav-list"
@@ -37,7 +45,9 @@ export function SideNav({ groups = [], currentHref, onNavigate, label = "Section
               {group.items.map((item) => (
                 <li key={item.href}>
                   <NavItem
-                    href={item.href} icon={item.icon} current={item.href === currentHref}
+                    href={item.href}
+                    icon={item.icon}
+                    current={item.href === currentHref}
                     onClick={onNavigate && ((e) => onNavigate(item.href, e))}
                   >
                     {item.label}
@@ -56,7 +66,7 @@ export const SIDENAV_CSS = `
 .ds-sidenav{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
 .ds-sidenav-group{display:flex;flex-direction:column;gap:4px}
 .ds-sidenav-grouplabel{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  text-transform:uppercase;letter-spacing:.09em;font-size:10.5px;font-weight:400;
+  text-transform:uppercase;letter-spacing:.09em;font-size:10.5px;font-weight:600;
   color:var(--text-2);margin:0 0 4px;padding:0 12px}
 .ds-sidenav-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
 .ds-sidenav-list .ds-navitem{width:100%;min-height:var(--target-touch)}

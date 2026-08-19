@@ -7,6 +7,13 @@
   rendering, the lot. Then it asserts that the markup each component is supposed
   to emit is present, and fails on any React warning or error.
 
+  The guide mounts one page at a time behind its sidebar, so a single render only
+  ever contains one page's components. This renders every page and checks against
+  the concatenation - the assertions below stay a statement about the guide as a
+  whole rather than about whichever page happens to load first. A page that stops
+  rendering entirely still fails, since its components vanish from the combined
+  markup along with it.
+
   It does not run effects or simulate interaction - renderToString stops short of
   both. Keyboard behaviour (the Select combobox, the password toggle) still needs
   a real browser or a jsdom test suite.
@@ -26,9 +33,16 @@ const vite = await createServer({
 });
 
 let html = "";
+const perPage = [];
 try {
   const mod = await vite.ssrLoadModule("/index.js");
-  html = renderToString(React.createElement(mod.default));
+  for (const pg of mod.PAGES) {
+    const one = renderToString(
+      React.createElement(mod.default, { initialPage: pg.id }),
+    );
+    perPage.push([pg.label, one.length]);
+    html += one;
+  }
 } catch (e) {
   console.error = origErr; console.warn = origWarn;
   console.error("\nRENDER THREW:\n", e);
@@ -97,7 +111,14 @@ const checks = [
   ["Conformance 3.3.7",      /Redundant Entry/],
 ];
 
-console.log("\nrendered " + html.length.toLocaleString() + " chars of HTML\n");
+console.log(
+  "\nrendered " + perPage.length + " pages, " +
+  html.length.toLocaleString() + " chars of HTML total",
+);
+for (const [label, len] of perPage) {
+  console.log("  " + label.padEnd(16) + len.toLocaleString().padStart(9));
+}
+console.log();
 let bad = 0;
 for (const [name, re] of checks) {
   const ok = re.test(html);

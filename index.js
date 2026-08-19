@@ -6,7 +6,7 @@
   themeable components, layout primitives, and the token / color helpers.
 */
 
-export { default } from "./StyleGuide";
+export { default, PAGES } from "./StyleGuide";
 
 export { Button } from "./Button";
 export { Field } from "./Field";
