@@ -21,6 +21,9 @@ export const PRESETS = {
       "--text-2": "#6C625D", "--border": "#EFE6DF", "--border-interactive": "#8E8880", "--radius": "10px",
       "--accent-fill": "#9E4A4E", "--accent-fill-hover": "#843C40",
       "--accent-fill-active": "#6E3236", "--accent-on-fill": "#FFFFFF",
+      // The same colour doing the bare-shape job (1.4.11): Sweet Rosewood
+      // already clears 3:1 on --surface, so these match the fill pair exactly.
+      "--accent-marker": "#9E4A4E", "--accent-on-marker": "#FFFFFF",
       "--accent-text": "#883C42", "--accent-tint": "#FAEBE6", "--accent-on-tint": "#7A3236",
       "--secondary-bg": "#FAEBE6", "--secondary-bg-hover": "#F4DCD4",
       "--secondary-text": "#7A3236", "--secondary-border": "transparent",
@@ -33,6 +36,7 @@ export const PRESETS = {
       "--text-2": "#B6ABA6", "--border": "#3A3234", "--border-interactive": "#7D726B", "--radius": "10px",
       "--accent-fill": "#A85055", "--accent-fill-hover": "#B85E63",
       "--accent-fill-active": "#C56D72", "--accent-on-fill": "#FFFFFF",
+      "--accent-marker": "#A85055", "--accent-on-marker": "#FFFFFF",
       "--accent-text": "#E7A1A6", "--accent-tint": "#3A2528", "--accent-on-tint": "#F1C7C9",
       "--secondary-bg": "#3A2528", "--secondary-bg-hover": "#462E31",
       "--secondary-text": "#F1C7C9", "--secondary-border": "transparent",

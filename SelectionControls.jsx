@@ -61,26 +61,26 @@ export const SEL_CSS = `
 .ds-check-box{width:20px;height:20px;box-sizing:border-box;flex-shrink:0;background:var(--surface);
   border:1.5px solid var(--border-interactive);border-radius:min(var(--radius),7px);
   display:inline-flex;align-items:center;justify-content:center;transition:background .1s,border-color .1s}
-.ds-check-box::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;
+.ds-check-box::after{content:"";width:5px;height:9px;border:solid var(--accent-on-marker);border-width:0 2px 2px 0;
   transform:rotate(45deg) scale(0);margin-top:-1px;transition:transform .1s}
-.ds-sel-input:checked + .ds-check-box{background:var(--accent-fill);border-color:var(--accent-fill)}
+.ds-sel-input:checked + .ds-check-box{background:var(--accent-marker);border-color:var(--accent-marker)}
 .ds-sel-input:checked + .ds-check-box::after{transform:rotate(45deg) scale(1)}
-.ds-sel-input:indeterminate + .ds-check-box{background:var(--accent-fill);border-color:var(--accent-fill)}
-.ds-sel-input:indeterminate + .ds-check-box::after{width:10px;height:2px;border:none;background:#fff;
+.ds-sel-input:indeterminate + .ds-check-box{background:var(--accent-marker);border-color:var(--accent-marker)}
+.ds-sel-input:indeterminate + .ds-check-box::after{width:10px;height:2px;border:none;background:var(--accent-on-marker);
   border-radius:1px;transform:none;margin:0}
 .ds-radio-box{width:20px;height:20px;box-sizing:border-box;flex-shrink:0;background:var(--surface);
   border:1.5px solid var(--border-interactive);border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;transition:border-color .1s}
-.ds-radio-dot{width:9px;height:9px;border-radius:50%;background:var(--accent-fill);transform:scale(0);transition:transform .1s}
-.ds-sel-input:checked + .ds-radio-box{border-color:var(--accent-fill)}
+.ds-radio-dot{width:9px;height:9px;border-radius:50%;background:var(--accent-marker);transform:scale(0);transition:transform .1s}
+.ds-sel-input:checked + .ds-radio-box{border-color:var(--accent-marker)}
 .ds-sel-input:checked + .ds-radio-box .ds-radio-dot{transform:scale(1)}
 .ds-switch-track{width:38px;height:22px;box-sizing:border-box;flex-shrink:0;position:relative;
   background:var(--disabled-bg);border:1.5px solid var(--border-interactive);
   border-radius:min(var(--radius),11px);transition:background .15s,border-color .15s}
 .ds-switch-thumb{width:14px;height:14px;border-radius:50%;background:var(--text-2);position:absolute;
   top:2px;left:2px;transition:left .15s,background .15s}
-.ds-sel-input:checked + .ds-switch-track{background:var(--accent-fill);border-color:var(--accent-fill)}
-.ds-sel-input:checked + .ds-switch-track .ds-switch-thumb{left:19px;background:#fff}
+.ds-sel-input:checked + .ds-switch-track{background:var(--accent-marker);border-color:var(--accent-marker)}
+.ds-sel-input:checked + .ds-switch-track .ds-switch-thumb{left:19px;background:var(--accent-on-marker)}
 .ds-sel-input:focus-visible + .ds-check-box,
 .ds-sel-input:focus-visible + .ds-radio-box,
 .ds-sel-input:focus-visible + .ds-switch-track{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ring)}

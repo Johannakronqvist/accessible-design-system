@@ -10,8 +10,9 @@
          <App />
        </ThemeProvider>
 
-     accent is snapped to accessible shades rather than used raw, so branding
-     cannot silently drop below AA. mode takes "light", "dark" or "system".
+     accent becomes the fill exactly as picked; its label adapts to clear it, so
+     branding cannot drop below AA and cannot be overruled either. mode takes
+     "light", "dark" or "system".
      Need the variables somewhere React cannot reach - :root, a global
      stylesheet, a server-rendered style attribute? buildTheme() is the same
      assembly as a pure function.
@@ -30,7 +31,7 @@
   its CSS, concatenates the CSS into one <style> block, and renders the guide.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Plus,
   ArrowRight,
@@ -42,7 +43,9 @@ import {
 } from "lucide-react";
 
 import { PRESETS, BREAKPOINTS } from "./tokens";
-import { contrast, hexToRgb, ratioTag } from "./color";
+import {
+  contrast, hexToRgb, ratioTag, suggestTextColors, suggestInkColors,
+} from "./color";
 import { ThemeProvider, buildTheme, THEME_CSS } from "./ThemeProvider";
 import { Button, BUTTON_CSS } from "./Button";
 import { Field, FIELD_CSS } from "./Field";
@@ -74,7 +77,7 @@ import { VISUALLYHIDDEN_CSS } from "./VisuallyHidden";
 import { Select, SELECT_CSS } from "./Select";
 import { Checkbox, RadioGroup, Switch, SEL_CSS } from "./SelectionControls";
 import { Badge, TagDemo, BADGE_CSS } from "./Badge";
-import { AlertDemo, ALERT_CSS } from "./Alert";
+import { Alert, AlertDemo, ALERT_CSS } from "./Alert";
 import { Stack, Cluster, Grid, RESPONSIVE_CSS } from "./Layout";
 import {
   CONFORMANCE,
@@ -144,7 +147,7 @@ const GUIDE_CSS = `
   border:.5px solid var(--border);border-radius:999px;padding:5px 12px}
 .ds-ctrl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .ds-ctrl > label{font-size:12px;color:var(--text-2);min-width:64px}
-.ds input[type=range]{accent-color:var(--accent-fill);flex:1;min-width:130px;max-width:220px;height:4px}
+.ds input[type=range]{accent-color:var(--accent-marker);flex:1;min-width:130px;max-width:220px;height:4px}
 .ds-read{font-family:ui-monospace,monospace;font-size:12px;color:var(--text-1)}
 .ds .pass{font-family:var(--font-body);font-size:11px;font-weight:500;color:#fff;
   padding:1px 7px;border-radius:6px;vertical-align:middle}
@@ -164,8 +167,49 @@ const GUIDE_CSS = `
 .ds-conf-meta{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
   font-weight:400;color:var(--text-2)}
+/* Suggested text colours. Each chip carries its name and measured ratio as
+   text, so the swatch is never the only thing distinguishing one from another
+   (1.4.1) - and the ratio is the reason to pick one, not decoration. */
+.ds-suggest{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+/* A live sample of the choice on the surface it is for. A ratio is a number;
+   this is the thing the number is about. */
+.ds-ink-preview{font-family:var(--font-body);font-size:12.5px;font-weight:500;
+  padding:6px 12px;border-radius:min(var(--radius),8px);white-space:nowrap}
+.ds-suggest-chip{display:flex;align-items:center;gap:8px;padding:7px 11px 7px 8px;
+  min-height:var(--target-touch);background:var(--surface);cursor:pointer;
+  border:.5px solid var(--border);border-radius:min(var(--radius),9px);
+  font-family:var(--font-body);text-align:left;transition:border-color .12s,background .12s}
+.ds-suggest-chip:hover{background:var(--accent-tint);border-color:var(--accent-marker)}
+.ds-suggest-chip:focus-visible{outline:none;box-shadow:0 0 0 2px var(--ring)}
+.ds-suggest-chip[aria-pressed="true"]{border-color:var(--accent-marker);
+  box-shadow:inset 0 0 0 1px var(--accent-marker)}
+.ds-suggest-sw{width:26px;height:26px;flex-shrink:0;border-radius:min(var(--radius),6px);
+  border:.5px solid var(--border)}
+.ds-suggest-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ds-suggest-name{font-size:12.5px;font-weight:500;color:var(--text-1)}
+.ds-suggest-ratio{font-family:ui-monospace,monospace;font-size:10.5px;color:var(--text-2)}
+
+/* Manual token overrides. One row per token: swatch, hex, and what the value
+   is measured against - a colour editor with no readout is how a design system
+   ships an unreadable button. */
+.ds-ovr{display:flex;flex-direction:column;gap:2px}
+.ds-ovr-row{display:grid;grid-template-columns:minmax(150px,230px) auto minmax(0,1fr) auto;
+  gap:12px;align-items:center;padding:8px 0;border-top:.5px solid var(--border)}
+.ds-ovr-row:first-child{border-top:none}
+.ds-ovr-name{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ds-ovr-label{font-size:12.5px;color:var(--text-1);font-weight:500}
+.ds-ovr-token{font-family:ui-monospace,monospace;font-size:10.5px;color:var(--text-2)}
+.ds-ovr-note{font-size:11px;color:var(--text-2)}
+.ds-ovr-reset{background:none;border:none;padding:4px 6px;cursor:pointer;color:var(--accent-text);
+  font-family:var(--font-body);font-size:11.5px;text-decoration:underline;
+  text-underline-offset:2px;border-radius:min(var(--radius),6px)}
+.ds-ovr-reset:focus-visible{outline:none;box-shadow:0 0 0 2px var(--ring)}
+.ds-ovr-reset[hidden]{visibility:hidden;display:block}
+@media (max-width:640px){
+  .ds-ovr-row{grid-template-columns:1fr auto;grid-auto-flow:row}
+}
 .ds-derive{display:flex;flex-wrap:wrap;align-items:stretch;gap:12px}
-.ds-derive-cell{display:flex;flex-direction:column;gap:6px;flex:1;min-width:150px;
+.ds-derive-cell{display:flex;flex-direction:column;gap:6px;flex:1;min-width:126px;
   padding:12px 14px;background:var(--bg);border:.5px solid var(--border);
   border-radius:min(var(--radius),10px)}
 .ds-derive-row{display:flex;align-items:center;gap:8px}
@@ -227,6 +271,111 @@ function Swatch({ name, value }) {
   href values are real fragments so the entries are honest links: middle-click
   and "open in new tab" still work, and the hash survives a reload.
 */
+/*
+  The tokens the manual editor exposes, and what each one is measured against.
+
+  Deliberately a shortlist rather than every variable in the theme. These are
+  the pairs a person actually reasons about - text on background, label on
+  button - and each row names its partner so the ratio beside it is a real
+  claim rather than a number with no referent.
+
+  `target` is 3 for --border-interactive because it is a non-text boundary
+  (1.4.11) rather than text on a background; holding it to 4.5 would flag a
+  compliant control border as a failure.
+
+  Plain --border is deliberately absent. It is the decorative hairline between
+  surfaces, sitting around 1.2:1 by design, and it is not what 1.4.11 governs -
+  putting it in this table with a contrast bar would report the preset itself
+  as broken, which is the fastest way to teach someone to ignore the warnings.
+*/
+const OVERRIDE_ROWS = [
+  { name: "--text-1", label: "Body text", against: "--bg", target: 4.5, note: "on the page background" },
+  { name: "--text-2", label: "Secondary text", against: "--bg", target: 4.5, note: "on the page background" },
+  { name: "--accent-text", label: "Link text", against: "--bg", target: 4.5, note: "on the page background" },
+  { name: "--accent-fill", label: "Button fill", against: "--accent-on-fill", target: 4.5, note: "against its own label" },
+  { name: "--accent-marker", label: "Indicator shape", against: "--surface", target: 3, note: "non-text boundary, 3:1" },
+  { name: "--accent-on-fill", label: "Button label", against: "--accent-fill", target: 4.5, note: "on the button fill" },
+  { name: "--bg", label: "Page background", against: "--text-1", target: 4.5, note: "against body text" },
+  { name: "--surface", label: "Card surface", against: "--text-1", target: 4.5, note: "against body text" },
+  { name: "--border-interactive", label: "Control border", against: "--surface", target: 3, note: "non-text boundary, 3:1" },
+];
+
+/*
+  A colour control with suggestions attached.
+
+  Body text and the label on a brand-coloured button are the same problem twice:
+  choose an ink, against a surface you did not necessarily choose, and be told
+  what the contrast actually is. The only differences are which surface it is
+  measured against and what a swatch means, so both are props.
+
+  Each chip carries its name and measured ratio as text, so the swatch is never
+  the only thing distinguishing one option from another (1.4.1), and aria-pressed
+  makes the current choice available to a screen reader rather than only visible.
+*/
+function InkPicker({
+  id, label, value, resolved, onPick, onReset, ratio, target,
+  suggestions, against, preview,
+}) {
+  const ok = ratio >= target;
+  return (
+    <>
+      <div className="ds-ctrl" style={{ marginBottom: 4, alignItems: "center" }}>
+        <label htmlFor={id}>{label}</label>
+        <input
+          id={id}
+          type="color"
+          className="ds-color-in"
+          value={resolved}
+          onChange={(e) => onPick(e.target.value.toUpperCase())}
+          aria-label={label}
+        />
+        <span className="ds-read">
+          {ratio.toFixed(1)}:1{" "}
+          <span className="pass" style={{ background: ok ? "#15803D" : "#B4322F" }}>
+            {ok ? ratioTag(ratio) : "FAILS"}
+          </span>
+        </span>
+        <span style={{ fontSize: "var(--fs-sm)", color: "var(--text-2)" }}>
+          {resolved} {against}
+        </span>
+        {preview}
+        {value && (
+          <button type="button" className="ds-btn secondary sm" onClick={onReset}>
+            <RotateCcw size={13} aria-hidden="true" /> Reset
+          </button>
+        )}
+      </div>
+
+      <div className="ds-suggest" role="group" aria-label={`Suggested ${label.toLowerCase()} colors`}>
+        {suggestions.map((sug) => {
+          const on = resolved.toUpperCase() === sug.hex.toUpperCase();
+          return (
+            <button
+              key={sug.hex}
+              type="button"
+              className="ds-suggest-chip"
+              aria-pressed={on}
+              onClick={() => onPick(sug.hex)}
+            >
+              <span
+                className="ds-suggest-sw"
+                style={{ background: sug.hex }}
+                aria-hidden="true"
+              />
+              <span className="ds-suggest-text">
+                <span className="ds-suggest-name">{sug.label}</span>
+                <span className="ds-suggest-ratio">
+                  {sug.ratio.toFixed(1)}:1 {ratioTag(sug.ratio)}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 export const PAGES = [
   { id: "start", href: "#start", label: "Getting started", group: "Overview" },
   {
@@ -277,6 +426,12 @@ export default function StyleGuide({ initialPage } = {}) {
   const [modal, setModal] = useState(null); // "confirm" | "drawer" | null
   const [navAt, setNavAt] = useState("#projects");
   const [sideAt, setSideAt] = useState("#members");
+  // null = the preset's own text colour. A hex here re-derives --text-1/-2.
+  const [textColor, setTextColor] = useState(null);
+  // null = the ink derived for the brand colour. A hex here overrides it.
+  const [onAccentColor, setOnAccentColor] = useState(null);
+  // Raw per-token escape hatch: { "--token": "#hex" }. Empty = nothing forced.
+  const [overrides, setOverrides] = useState({});
 
   /*
     Which page the sidebar is showing. It starts on the first page rather than
@@ -330,6 +485,9 @@ export default function StyleGuide({ initialPage } = {}) {
   const themeArgs = {
     mode,
     accent: color,
+    textColor,
+    onAccentColor,
+    overrides,
     radius: shape,
     baseSize: base,
     ratio,
@@ -337,18 +495,72 @@ export default function StyleGuide({ initialPage } = {}) {
   };
   const { tokens, fontScale: fs } = buildTheme(themeArgs);
 
+  /*
+    Suggestions are computed against the *live* background and accent, not the
+    preset, so overriding --bg below re-suggests text colours that work on the
+    new background rather than on the one that used to be there.
+  */
+  const textSuggestions = useMemo(
+    () => suggestTextColors(tokens["--bg"], { accentHex: tokens["--accent-fill"] }),
+    [tokens["--bg"], tokens["--accent-fill"]],
+  );
+
+  /*
+    Ink options for the brand-coloured surfaces, regenerated whenever the fill
+    changes - the whole point is that they are options for *this* button, not a
+    fixed palette that happens to work against the default.
+  */
+  const inkSuggestions = useMemo(
+    () => suggestInkColors(tokens["--accent-fill"], { accentHex: tokens["--accent-fill"] }),
+    [tokens["--accent-fill"]],
+  );
+
+  const setOverride = (name, value) =>
+    setOverrides((cur) => ({ ...cur, [name]: value }));
+
+  const clearOverride = (name) =>
+    setOverrides((cur) => {
+      const next = { ...cur };
+      delete next[name];
+      return next;
+    });
+
+  // Rows whose forced value misses the bar its partner sets. The editor hands
+  // out raw values, so this is the thing that keeps it honest.
+  const failing = OVERRIDE_ROWS.filter((r) => {
+    if (!(r.name in overrides)) return false;
+    return contrast(hexToRgb(tokens[r.name]), hexToRgb(tokens[r.against])) < r.target;
+  });
+
   // Live WCAG check for the active accent (curated or custom).
-  const rFill = contrast([255, 255, 255], hexToRgb(tokens["--accent-fill"]));
   const rText = contrast(
     hexToRgb(tokens["--accent-text"]),
     hexToRgb(tokens["--bg"]),
   );
-
-  // The raw colour as picked, before deriveAccent touches it. Showing this
-  // alongside the derived value is the only way the snapping is visible - the
-  // swatch you see is the input, but the ratios describe the output.
-  const pickedHex = color || p[mode]["--accent-fill"];
-  const rPicked = contrast([255, 255, 255], hexToRgb(pickedHex));
+  // Body text against the page, which is what the text-colour control moves.
+  const rText1 = contrast(
+    hexToRgb(tokens["--text-1"]),
+    hexToRgb(tokens["--bg"]),
+  );
+  // The button label against its fill. This is the pair that used to be fixed
+  // at white-on-whatever; now the ink moves so the fill does not have to.
+  const rOnFill = contrast(
+    hexToRgb(tokens["--accent-fill"]),
+    hexToRgb(tokens["--accent-on-fill"]),
+  );
+  // The marker against the surface it is read on. 3:1 rather than 4.5:1 - it is
+  // a shape, not text (1.4.11).
+  const rMarker = contrast(
+    hexToRgb(tokens["--accent-marker"]),
+    hexToRgb(tokens["--surface"]),
+  );
+  // Whether the marker is still literally the picked colour. True for a little
+  // over half of the RGB cube, which is the point of splitting the token.
+  const markerKept = tokens["--accent-marker"] === tokens["--accent-fill"];
+  // Whether the picked colour survived as the on-page text token, or had to be
+  // walked. Stated outright rather than left for someone to infer from hexes.
+  const accentTextKept =
+    !color || tokens["--accent-text"].toUpperCase() === color.toUpperCase();
 
   return (
     // The guide is now just another ThemeProvider consumer - it holds the state
@@ -584,41 +796,14 @@ export default function StyleGuide({ initialPage } = {}) {
                     {/* The derivation, shown rather than described. Without the before
                 column this reads as "unusable color, approved" - the picked
                 swatch is what you see, but the ratio describes the derived one. */}
-                    <div className="ds-derive" style={{ marginBottom: 18 }}>
+                    {/* Three surfaces the accent has to work on, each with the
+                        pair it is measured against. The old panel showed a
+                        "picked → derived" arrow because the fill always moved;
+                        it does not move any more, so an arrow would be drawing
+                        a transformation that no longer happens. */}
+                    <div className="ds-derive" style={{ marginBottom: 14 }}>
                       <div className="ds-derive-cell">
-                        <span className="ds-label">You picked</span>
-                        <div className="ds-derive-row">
-                          <span
-                            className="ds-derive-chip"
-                            style={{ background: pickedHex }}
-                          />
-                          <span className="ds-swhex">{pickedHex}</span>
-                        </div>
-                        <span className="ds-read">
-                          {rPicked.toFixed(1)}:1{" "}
-                          <span
-                            className="pass"
-                            style={{
-                              background:
-                                rPicked >= 4.5 ? "#15803D" : "#B4322F",
-                            }}
-                          >
-                            {rPicked >= 4.5 ? ratioTag(rPicked) : "FAILS"}
-                          </span>
-                        </span>
-                        <span className="ds-derive-note">white text on it</span>
-                      </div>
-
-                      {/* "derived", not "darkened": the search moves lightness in either
-                  direction to land on 4.5:1, so an already-dark input can come
-                  back lighter. Labelling it darkened is wrong for those. */}
-                      <div className="ds-derive-arrow" aria-hidden="true">
-                        <ArrowRight size={18} />
-                        <span>derived</span>
-                      </div>
-
-                      <div className="ds-derive-cell">
-                        <span className="ds-label">Used as --accent-fill</span>
+                        <span className="ds-label">--accent-fill</span>
                         <div className="ds-derive-row">
                           <span
                             className="ds-derive-chip"
@@ -629,21 +814,81 @@ export default function StyleGuide({ initialPage } = {}) {
                           </span>
                         </div>
                         <span className="ds-read">
-                          {rFill.toFixed(1)}:1{" "}
+                          {rOnFill.toFixed(1)}:1{" "}
                           <span
                             className="pass"
                             style={{
-                              background: rFill >= 4.5 ? "#15803D" : "#B4322F",
+                              background: rOnFill >= 4.5 ? "#15803D" : "#B4322F",
                             }}
                           >
-                            {ratioTag(rFill)}
+                            {ratioTag(rOnFill)}
                           </span>
                         </span>
-                        <span className="ds-derive-note">white text on it</span>
+                        <span className="ds-derive-note">
+                          {color
+                            ? "your color, kept as picked"
+                            : "the preset accent"}
+                        </span>
                       </div>
 
                       <div className="ds-derive-cell">
-                        <span className="ds-label">And --accent-text</span>
+                        <span className="ds-label">--accent-on-fill</span>
+                        <div className="ds-derive-row">
+                          <span
+                            className="ds-derive-chip"
+                            style={{ background: tokens["--accent-on-fill"] }}
+                          />
+                          <span className="ds-swhex">
+                            {tokens["--accent-on-fill"]}
+                          </span>
+                        </div>
+                        <span className="ds-read">
+                          {rOnFill.toFixed(1)}:1{" "}
+                          <span
+                            className="pass"
+                            style={{
+                              background: rOnFill >= 4.5 ? "#15803D" : "#B4322F",
+                            }}
+                          >
+                            {ratioTag(rOnFill)}
+                          </span>
+                        </span>
+                        <span className="ds-derive-note">
+                          the label, chosen to fit the fill
+                        </span>
+                      </div>
+
+                      <div className="ds-derive-cell">
+                        <span className="ds-label">--accent-marker</span>
+                        <div className="ds-derive-row">
+                          <span
+                            className="ds-derive-chip"
+                            style={{ background: tokens["--accent-marker"] }}
+                          />
+                          <span className="ds-swhex">
+                            {tokens["--accent-marker"]}
+                          </span>
+                        </div>
+                        <span className="ds-read">
+                          {rMarker.toFixed(1)}:1{" "}
+                          <span
+                            className="pass"
+                            style={{
+                              background: rMarker >= 3 ? "#15803D" : "#B4322F",
+                            }}
+                          >
+                            {rMarker >= 3 ? "PASS" : "FAILS"}
+                          </span>
+                        </span>
+                        <span className="ds-derive-note">
+                          {markerKept
+                            ? "bare shapes, same color"
+                            : "bare shapes, lifted to be visible"}
+                        </span>
+                      </div>
+
+                      <div className="ds-derive-cell">
+                        <span className="ds-label">--accent-text</span>
                         <div className="ds-derive-row">
                           <span
                             className="ds-derive-chip"
@@ -666,6 +911,7 @@ export default function StyleGuide({ initialPage } = {}) {
                         </span>
                         <span className="ds-derive-note">
                           on the page background
+                          {color && (accentTextKept ? ", kept" : ", adjusted")}
                         </span>
                       </div>
                     </div>
@@ -674,23 +920,111 @@ export default function StyleGuide({ initialPage } = {}) {
                       <strong
                         style={{ color: "var(--text-1)", fontWeight: 500 }}
                       >
-                        Your color is never used raw.
+                        Your color is used exactly as you picked it.
                       </strong>{" "}
-                      deriveAccent keeps the hue you chose and walks the
-                      lightness until white text on it clears 4.5:1 - down for a
-                      pale color, up for one that is already very dark. It stops
-                      at the first shade that passes rather than the darkest
-                      available, so the result stays as close to your choice as
-                      the ratio allows.
+                      The label on top adapts instead - white where white works,
+                      a dark ink where it does not. That trade is what makes
+                      every brand color usable: for white to fail on a color its
+                      luminance has to be above 0.1833, and for black to fail it
+                      has to be below 0.175, so no color can defeat both. There
+                      is nothing you can type that the fill cannot simply be.
                     </p>
                     <p className="ds-hint" style={{ margin: "0 0 18px" }}>
-                      That is the difference between picking a color and
-                      deriving one. Because the search targets a contrast ratio
-                      rather than a fixed shade, there is no brand color you can
-                      type in that drops the system below AA - and every
-                      component below re-tunes from the derived tokens, never
-                      from what you picked.
+                      That holds wherever the color is a surface with something
+                      on it - the primary button, the skip link, a checked
+                      segment. Two other jobs are not that, and each needs its
+                      own answer.
                     </p>
+                    <p className="ds-hint" style={{ margin: "0 0 18px" }}>
+                      <span className="ds-mono">--accent-marker</span> is the
+                      color used as a bare shape: a tab underline, a radio dot,
+                      a checkbox, a slider track. Nothing sits on top of those
+                      to carry the identity, so the shape itself has to be
+                      visible against the page - 3:1, non-text (1.4.11). It is
+                      the picked color whenever the picked color can do that,
+                      which is a little over half of all colors, and lifted the
+                      shortest distance that works when it cannot.{" "}
+                      {color &&
+                        (markerKept
+                          ? "Yours needs no lift, so every shape below is literally your color. "
+                          : "Yours is too pale to read as a 2px rule, so the shapes are darkened - and only the shapes. The button above is still exactly what you picked. ")}
+                    </p>
+                    <p className="ds-hint" style={{ margin: "0 0 18px" }}>
+                      <span className="ds-mono">--accent-text</span> is the
+                      third: it sits on the page as text, and a color can be
+                      perfectly good as a button and still too pale to read as a
+                      link.{" "}
+                      {color &&
+                        (accentTextKept
+                          ? "Yours clears AA on the background, so it is kept unchanged. "
+                          : "Yours does not clear AA on the background, so it is walked the shortest distance that does - and only that far. ")}
+                      A color that already passes is never moved to one that
+                      passes by less.
+                    </p>
+
+
+                    {/* Two ink controls, same component. The brand colour
+                        drives the accents; these are the other half - what the
+                        text on top of them is, on the page and on the brand
+                        colour itself. Both offer suggestions that already pass
+                        and snap anything typed in that does not. */}
+                    <InkPicker
+                      id="ds-textcolor"
+                      label="Body text"
+                      value={textColor}
+                      resolved={tokens["--text-1"]}
+                      onPick={setTextColor}
+                      onReset={() => setTextColor(null)}
+                      ratio={rText1}
+                      target={4.5}
+                      suggestions={textSuggestions}
+                      against={`on ${tokens["--bg"]}`}
+                    />
+
+                    <InkPicker
+                      id="ds-oncolor"
+                      label="Text on brand"
+                      value={onAccentColor}
+                      resolved={tokens["--accent-on-fill"]}
+                      onPick={setOnAccentColor}
+                      onReset={() => setOnAccentColor(null)}
+                      ratio={rOnFill}
+                      target={4.5}
+                      suggestions={inkSuggestions}
+                      against={`on ${tokens["--accent-fill"]}`}
+                      preview={
+                        <span
+                          className="ds-ink-preview"
+                          style={{
+                            background: tokens["--accent-fill"],
+                            color: tokens["--accent-on-fill"],
+                          }}
+                        >
+                          Save changes
+                        </span>
+                      }
+                    />
+
+                    <p className="ds-hint" style={{ margin: "10px 0 18px" }}>
+                      Both sets are generated against the surface the text
+                      actually sits on, so they change when that surface does -
+                      pick a new brand color and the label options re-derive for
+                      it. <span className="ds-mono">Body text</span> sets{" "}
+                      <span className="ds-mono">--text-1</span>, with the muted{" "}
+                      <span className="ds-mono">--text-2</span> derived from it
+                      as the most recessive shade that still clears AA, which is
+                      what keeps the pair looking related.{" "}
+                      <span className="ds-mono">Text on brand</span> sets{" "}
+                      <span className="ds-mono">--accent-on-fill</span> and{" "}
+                      <span className="ds-mono">--accent-on-marker</span> - the
+                      button label and the checkmark - each measured against its
+                      own surface, because those two are not always the same
+                      color. Anything typed into either picker is snapped the
+                      way the brand color is, so neither control can drop text
+                      below AA.
+                    </p>
+
+
                     <div className="ds-ctrl" style={{ marginBottom: 18 }}>
                       <label htmlFor="ds-base">Type</label>
                       <input
@@ -748,6 +1082,129 @@ export default function StyleGuide({ initialPage } = {}) {
                       />
                       <span className="ds-read">
                         radius {shape === "999px" ? "pill" : shape}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Manual overrides */}
+                <div className="ds-section">
+                  <div className="ds-sectitle">Manual overrides</div>
+                  <div className="ds-card">
+                    <p className="ds-hint" style={{ margin: "0 0 16px" }}>
+                      <strong
+                        style={{ color: "var(--text-1)", fontWeight: 500 }}
+                      >
+                        Everything above is derived. This is not.
+                      </strong>{" "}
+                      Each row writes one token straight through, exactly as
+                      given - no snapping, no search. It is the escape hatch for
+                      a decision the derivation would otherwise overrule, and it
+                      is the one place the system will let you go below AA. The
+                      ratio beside each row is measured live against the partner
+                      named under it, so nothing fails quietly.
+                    </p>
+
+                    {failing.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <Alert
+                          tone="warning"
+                          title={`${failing.length} override${failing.length > 1 ? "s are" : " is"} below the bar`}
+                          live
+                        >
+                          {failing.map((r) => r.label).join(", ")} —{" "}
+                          {failing.length > 1 ? "these do" : "this does"} not
+                          meet the contrast each one needs. Every component
+                          reading {failing.length > 1 ? "these tokens" : "this token"}{" "}
+                          inherits the problem.
+                        </Alert>
+                      </div>
+                    )}
+
+                    <div className="ds-ovr">
+                      {OVERRIDE_ROWS.map((row) => {
+                        const value = tokens[row.name];
+                        const partner = tokens[row.against];
+                        const r = contrast(hexToRgb(value), hexToRgb(partner));
+                        const ok = r >= row.target;
+                        const forced = row.name in overrides;
+                        const inputId = `ds-ovr-${row.name.replace(/-/g, "")}`;
+                        return (
+                          <div className="ds-ovr-row" key={row.name}>
+                            <label
+                              className="ds-ovr-name"
+                              htmlFor={inputId}
+                            >
+                              <span className="ds-ovr-label">
+                                {row.label}
+                                {forced && " ·"}
+                              </span>
+                              <span className="ds-ovr-token">{row.name}</span>
+                            </label>
+                            <input
+                              id={inputId}
+                              type="color"
+                              className="ds-color-in"
+                              value={value}
+                              onChange={(e) =>
+                                setOverride(row.name, e.target.value.toUpperCase())
+                              }
+                            />
+                            <span>
+                              <span className="ds-read">
+                                {r.toFixed(1)}:1{" "}
+                                <span
+                                  className="pass"
+                                  style={{
+                                    background: ok ? "#15803D" : "#B4322F",
+                                  }}
+                                >
+                                  {ok
+                                    ? row.target === 3
+                                      ? "PASS"
+                                      : ratioTag(r)
+                                    : "FAILS"}
+                                </span>
+                              </span>
+                              <br />
+                              <span className="ds-ovr-note">{row.note}</span>
+                            </span>
+                            {/* Kept in the layout when hidden so the grid does
+                                not reflow every time a row is reset. */}
+                            <button
+                              type="button"
+                              className="ds-ovr-reset"
+                              hidden={!forced}
+                              onClick={() => clearOverride(row.name)}
+                            >
+                              Reset
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div
+                      className="ds-ctrl"
+                      style={{ marginTop: 16, justifyContent: "flex-start" }}
+                    >
+                      <button
+                        type="button"
+                        className="ds-btn secondary sm"
+                        disabled={Object.keys(overrides).length === 0}
+                        onClick={() => setOverrides({})}
+                      >
+                        <RotateCcw size={13} aria-hidden="true" /> Reset all
+                        overrides
+                      </button>
+                      <span
+                        className="ds-ovr-note"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        {Object.keys(overrides).length === 0
+                          ? "Nothing overridden — every token below is derived."
+                          : `${Object.keys(overrides).length} token${Object.keys(overrides).length > 1 ? "s" : ""} forced.`}
                       </span>
                     </div>
                   </div>
@@ -1776,7 +2233,7 @@ export default function StyleGuide({ initialPage } = {}) {
                               width: 8,
                               height: 8,
                               borderRadius: "50%",
-                              background: "var(--accent-fill)",
+                              background: "var(--accent-marker)",
                             }}
                           />{" "}
                           Acme
@@ -2293,7 +2750,7 @@ export default function StyleGuide({ initialPage } = {}) {
                   <div className="ds-card">
                     {[
                       "Contrast verified AA on every pairing, and re-checked live whenever the brand color changes (1.4.3)",
-                      "Interactive borders, icons and the focus ring meet 3:1 non-text contrast (1.4.11)",
+                      "Interactive borders, icons, indicator shapes and the focus ring meet 3:1 non-text contrast (1.4.11) - the brand color is lifted to --accent-marker where it would otherwise be too pale to see",
                       "Every control clears a 24px target-size floor; large reaches 44px for touch (2.5.8)",
                       "Layout reflows to a single column at 320px and controls grow to touch size on touch devices (2.5.5)",
                       "Fluid min-height layout survives user text-spacing and 400% zoom without clipping (1.4.12 / 1.4.10)",

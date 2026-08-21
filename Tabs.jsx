@@ -102,7 +102,7 @@ export const TABS_CSS = `
 .ds-tab.selected{color:var(--accent-text);font-weight:600}
 /* Indicator bar: a second, non-colour cue for the selected tab. */
 .ds-tab.selected::after{content:"";position:absolute;left:8px;right:8px;bottom:-.5px;height:2px;
-  border-radius:2px 2px 0 0;background:var(--accent-fill)}
+  border-radius:2px 2px 0 0;background:var(--accent-marker)}
 .ds-tabs.vertical .ds-tab.selected::after{left:auto;right:-.5px;top:8px;bottom:8px;
   width:2px;height:auto;border-radius:2px 0 0 2px}
 .ds-tabpanel{padding:var(--space-2) 2px 0;outline:none;min-width:0;flex:1}

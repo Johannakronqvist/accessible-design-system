@@ -47,5 +47,7 @@ export { Container, Stack, Cluster, Grid } from "./Layout";
 
 export { ThemeProvider, buildTheme, useTheme } from "./ThemeProvider";
 
-export { deriveAccent } from "./color";
+export {
+  deriveAccent, suggestTextColors, suggestInkColors, deriveTextPair, snapToContrast,
+} from "./color";
 export { PRESETS, BADGE_TONES, ALERT_TONES, BREAKPOINTS } from "./tokens";

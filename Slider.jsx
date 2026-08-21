@@ -73,14 +73,14 @@ export const SLIDER_CSS = `
 .ds-slider-input:disabled{cursor:not-allowed}
 .ds-slider-input::-webkit-slider-runnable-track{height:6px;border-radius:999px;
   border:.5px solid var(--border);box-sizing:border-box;
-  background:linear-gradient(to right,var(--accent-fill) 0 var(--pct),var(--disabled-bg) var(--pct) 100%)}
+  background:linear-gradient(to right,var(--accent-marker) 0 var(--pct),var(--disabled-bg) var(--pct) 100%)}
 .ds-slider-input::-moz-range-track{height:6px;border-radius:999px;
   border:.5px solid var(--border);box-sizing:border-box;
-  background:linear-gradient(to right,var(--accent-fill) 0 var(--pct),var(--disabled-bg) var(--pct) 100%)}
+  background:linear-gradient(to right,var(--accent-marker) 0 var(--pct),var(--disabled-bg) var(--pct) 100%)}
 .ds-slider-input::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;
-  border-radius:50%;background:var(--accent-fill);border:3px solid var(--surface);box-sizing:border-box;
+  border-radius:50%;background:var(--accent-marker);border:3px solid var(--surface);box-sizing:border-box;
   margin-top:-9px;transition:transform .08s}
-.ds-slider-input::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--accent-fill);
+.ds-slider-input::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--accent-marker);
   border:3px solid var(--surface);box-sizing:border-box;transition:transform .08s}
 .ds-slider-input:active::-webkit-slider-thumb{transform:scale(1.08)}
 .ds-slider-input:active::-moz-range-thumb{transform:scale(1.08)}

@@ -18,6 +18,17 @@
   mode="system" follows prefers-color-scheme and keeps following it, so a theme
   toggle that offers Light / Dark / System needs no extra wiring.
 
+  Three ways to colour it, in increasing order of rope:
+
+    accent        a brand colour, used as the fill; its label adapts (AA held)
+    textColor     a text colour, snapped to a --text-1 / --text-2 pair (AA held)
+    onAccentColor the label on brand-coloured surfaces, snapped to clear them
+    overrides     raw { "--token": value } pairs, applied last and unchecked
+
+  The first two cannot drop the system below AA no matter what you pass them.
+  overrides can, by design - it exists for the case where a designer has made a
+  deliberate choice the derivation would otherwise overrule.
+
   loadFonts defaults to false on purpose. Injecting a Google Fonts <link> makes
   a third-party request on behalf of the host application, which is a privacy
   and CSP decision that belongs to the app, not to a component it imported.
@@ -26,13 +37,14 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { PRESETS, BADGE_TONES, ALERT_TONES } from "./tokens";
-import { deriveAccent } from "./color";
+import { deriveAccent, deriveTextPair, snapToContrast } from "./color";
 
 const ThemeContext = createContext(null);
 
 /* Pure token assembly. Same output shape the style guide has always used. */
 export function buildTheme({
-  preset = "sweet", mode = "light", accent = null,
+  preset = "sweet", mode = "light", accent = null, textColor = null,
+  onAccentColor = null, overrides = null,
   radius = "10px", baseSize = 16, ratio = 1.2, spacingUnit = 8,
   targetMin = "24px", targetTouch = "44px",
 } = {}) {
@@ -40,9 +52,51 @@ export function buildTheme({
   const resolved = mode === "dark" ? "dark" : "light";
   const base = p[resolved];
 
-  // A custom brand colour is snapped to accessible accent tokens rather than
-  // used raw, so re-theming cannot silently drop below AA.
-  const tokens = accent ? { ...base, ...deriveAccent(accent, resolved) } : base;
+  // A custom brand colour becomes the fill as-is; deriveAccent adapts the label
+  // and the on-page tokens around it, so re-theming cannot drop below AA.
+  const accented = accent ? { ...base, ...deriveAccent(accent, resolved) } : base;
+
+  /*
+    A custom text colour gets the same treatment: snapped to a --text-1 /
+    --text-2 pair that clears AA against whatever background is in play. Note it
+    reads the background from `accented` rather than from the preset, so a
+    background someone has overridden below is still what the text is measured
+    against on the next render.
+  */
+  const texted = textColor
+    ? { ...accented, ...deriveTextPair(textColor, accented["--bg"]) }
+    : accented;
+
+  /*
+    The label on brand-coloured surfaces. Left alone it is derived - white or a
+    dark ink, whichever clears the fill. Set it and that choice is honoured, but
+    still snapped: a label is the one thing on a button that has to be readable,
+    so a colour that does not clear its own surface is moved until it does.
+
+    Applied to both inks, each measured against its own surface. --accent-fill
+    and --accent-marker are the same colour for most brands but not all, and a
+    single hex forced onto both without checking is how a legible button ends up
+    next to an invisible checkmark.
+  */
+  const inked = onAccentColor
+    ? {
+        ...texted,
+        "--accent-on-fill": snapToContrast(onAccentColor, texted["--accent-fill"], 4.5),
+        "--accent-on-marker": snapToContrast(onAccentColor, texted["--accent-marker"], 4.5),
+      }
+    : texted;
+
+  /*
+    Manual overrides are the deliberate escape hatch, and the one place the AA
+    guarantee does not hold: they are applied raw, exactly as given. Everything
+    above snaps a colour until it passes; this hands the value straight through,
+    because a system that silently corrects a designer's explicit choice is not
+    an override at all. Callers that need the guarantee should use `accent` and
+    `textColor` and leave this alone - and anything offering it as a UI owes the
+    user a live contrast readout, which is what the style guide does.
+  */
+  const manual = overrides || {};
+  const tokens = { ...inked, ...manual };
 
   const fs = {
     sm: Math.round(baseSize / ratio),
@@ -68,6 +122,20 @@ export function buildTheme({
     toneVars[`--bd-${tone}-sb`] = c.sb; toneVars[`--bd-${tone}-sf`] = c.sf;
     toneVars[`--bd-${tone}-lb`] = c.lb; toneVars[`--bd-${tone}-lf`] = c.lf;
   }
+  /*
+    The accent badge is the one tone that is not semantic - it means "brand",
+    so it has to follow the brand. The table is a curated set of preset values,
+    which left a green-themed app rendering a rosewood "accent" badge with a
+    hardcoded white label. Point it at the accent tokens already derived above,
+    and only when a custom accent was actually passed, so the preset's own
+    look is untouched by default.
+  */
+  if (accent) {
+    toneVars["--bd-accent-sb"] = tokens["--accent-tint"];
+    toneVars["--bd-accent-sf"] = tokens["--accent-on-tint"];
+    toneVars["--bd-accent-lb"] = tokens["--accent-fill"];
+    toneVars["--bd-accent-lf"] = tokens["--accent-on-fill"];
+  }
   for (const [tone, c] of Object.entries(ALERT_TONES[resolved])) {
     toneVars[`--al-${tone}-bg`] = c.bg; toneVars[`--al-${tone}-border`] = c.border;
     toneVars[`--al-${tone}-head`] = c.head; toneVars[`--al-${tone}-body`] = c.body;
@@ -83,6 +151,9 @@ export function buildTheme({
       "--radius": radius,
       "--target-min": targetMin, "--target-touch": targetTouch,
       "--font-display": p.fonts.display, "--font-body": p.fonts.body,
+      // Last again, so an override of something with an explicit entry above
+      // (--radius, a font) wins rather than being quietly discarded.
+      ...manual,
     },
   };
 }
@@ -111,16 +182,29 @@ const FONT_HREF =
   "&family=Playfair+Display:wght@400..700&display=swap";
 
 export function ThemeProvider({
-  preset = "sweet", mode = "light", accent = null,
+  preset = "sweet", mode = "light", accent = null, textColor = null,
+  onAccentColor = null, overrides = null,
   radius = "10px", baseSize = 16, ratio = 1.2, spacingUnit = 8,
   loadFonts = false, fontHref = FONT_HREF,
   as: Tag = "div", className, style, children, ...rest
 }) {
   const resolvedMode = useResolvedMode(mode);
 
+  /*
+    overrides is an object, so it would be a new reference on every render of a
+    caller that writes it inline - the common case. Keying the memo on its
+    contents instead of its identity keeps that caller from re-deriving the
+    whole token set on every keystroke, without making them memoise it first.
+  */
+  const overrideKey = overrides ? JSON.stringify(overrides) : "";
+
   const theme = useMemo(
-    () => buildTheme({ preset, mode: resolvedMode, accent, radius, baseSize, ratio, spacingUnit }),
-    [preset, resolvedMode, accent, radius, baseSize, ratio, spacingUnit]
+    () => buildTheme({
+      preset, mode: resolvedMode, accent, textColor, onAccentColor, overrides,
+      radius, baseSize, ratio, spacingUnit,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- overrideKey stands in for overrides
+    [preset, resolvedMode, accent, textColor, onAccentColor, overrideKey, radius, baseSize, ratio, spacingUnit]
   );
 
   useEffect(() => {

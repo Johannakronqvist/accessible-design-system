@@ -139,7 +139,7 @@ export const FILEUPLOAD_CSS = `
   padding:20px 16px;text-align:center;background:var(--surface);
   border:1.5px dashed var(--border-interactive);border-radius:min(calc(var(--radius) + 2px),14px);
   transition:background .12s,border-color .12s}
-.ds-file-zone.dragging{border-color:var(--accent-fill);background:var(--accent-tint);border-style:solid}
+.ds-file-zone.dragging{border-color:var(--accent-marker);background:var(--accent-tint);border-style:solid}
 .ds-file-zone.error{border-color:var(--danger)}
 .ds-file-zone.disabled{background:var(--disabled-bg);border-color:var(--disabled-border)}
 .ds-file-ic{color:var(--text-2);flex-shrink:0}

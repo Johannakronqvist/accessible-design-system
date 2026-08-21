@@ -107,7 +107,7 @@ export const NAVBAR_CSS = `
   align-items:center;gap:2px}
 /* Underline indicator: a third cue on top of the accent colour and weight step. */
 .ds-navbar-list .ds-navitem.current::after{content:"";position:absolute;
-  left:10px;right:10px;bottom:-2px;height:2px;border-radius:2px;background:var(--accent-fill)}
+  left:10px;right:10px;bottom:-2px;height:2px;border-radius:2px;background:var(--accent-marker)}
 
 /* Below BREAKPOINTS.md (./tokens) the same nav becomes a full-width row under
    the bar. Media queries cannot read CSS custom properties, so the value is

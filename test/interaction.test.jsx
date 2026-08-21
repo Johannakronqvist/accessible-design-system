@@ -11,12 +11,12 @@
 import { useRef } from "react";
 import { render, screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, test, expect, vi } from "vitest";
+import { describe, test, expect, vi, afterEach } from "vitest";
 
 import { Textarea } from "../Textarea";
 import { SearchField } from "../SearchField";
 import { PasswordField } from "../PasswordField";
-import { Slider } from "../Slider";
+import { Slider, SLIDER_CSS } from "../Slider";
 import { FileUpload } from "../FileUpload";
 import { NumberStepper } from "../NumberStepper";
 import { FormGroup } from "../FormGroup";
@@ -25,7 +25,7 @@ import { Select } from "../Select";
 import { Link } from "../Link";
 import { Breadcrumbs } from "../Breadcrumbs";
 import { Pagination, pageList } from "../Pagination";
-import { Tabs } from "../Tabs";
+import { Tabs, TABS_CSS } from "../Tabs";
 import { Accordion } from "../Accordion";
 import { Menu } from "../Menu";
 import { Navbar } from "../Navbar";
@@ -40,7 +40,9 @@ import { Spinner } from "../Spinner";
 import { Divider } from "../Divider";
 import { Heading, Text } from "../Typography";
 import { VisuallyHidden } from "../VisuallyHidden";
-import { contrast, hexToRgb } from "../color";
+import { contrast, hexToRgb, suggestTextColors, deriveTextPair } from "../color";
+import StyleGuide from "../StyleGuide";
+import { SEL_CSS } from "../SelectionControls";
 
 /* ------------------------------------------------------------ Select */
 
@@ -1184,6 +1186,381 @@ describe("Navbar / SideNav - onNavigate", () => {
 
 /* ------------------------------------------------------------ ThemeProvider */
 
+describe("Theme controls - text colour and manual overrides in the guide", () => {
+  const foundations = () =>
+    render(<StyleGuide initialPage="foundations" />);
+
+  // The guide opts into loadFonts, which appends a <link> to the shared jsdom
+  // document. Left behind it fails the ThemeProvider test further down that
+  // asserts no font request happens unless asked.
+  afterEach(() => {
+    document.querySelectorAll("link[data-ds-fonts]").forEach((l) => l.remove());
+  });
+
+  // The override editor also has a row labelled "Body text", so the pickers are
+  // reached through their groups and their ids rather than by label text alone.
+  const overrideInput = (token) =>
+    document.getElementById(`ds-ovr-${token.replace(/-/g, "")}`);
+
+  test("offers suggested text colours as real controls, labelled with their ratio", async () => {
+    foundations();
+    const group = screen.getByRole("group", { name: /suggested body text colors/i });
+    const chips = within(group).getAllByRole("button");
+    expect(chips.length).toBeGreaterThan(2);
+    // Each chip names itself and states its measured ratio, so the swatch is
+    // never the only thing telling them apart (1.4.1).
+    for (const chip of chips) {
+      expect(chip.textContent).toMatch(/\d+\.\d+:1/);
+      expect(chip).toHaveAttribute("aria-pressed");
+    }
+  });
+
+  test("picking a suggestion changes the body text token", async () => {
+    const user = userEvent.setup();
+    foundations();
+    const group = screen.getByRole("group", { name: /suggested body text colors/i });
+    const forest = within(group).getByRole("button", { name: /forest/i });
+
+    const before = document.querySelector(".ds-theme").style.getPropertyValue("--text-1");
+    await user.click(forest);
+    const after = document.querySelector(".ds-theme").style.getPropertyValue("--text-1");
+
+    expect(after).not.toBe(before);
+    expect(forest).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("a manual override is applied raw and flagged when it fails", async () => {
+    foundations();
+    const input = overrideInput("--text-1");
+
+    // Nothing forced yet.
+    expect(screen.getByText(/nothing overridden/i)).toBeInTheDocument();
+
+    // A pale grey on the near-white page: nowhere near 4.5:1.
+    fireEvent.input(input, { target: { value: "#eeeeee" } });
+
+    const theme = document.querySelector(".ds-theme");
+    expect(theme.style.getPropertyValue("--text-1")).toBe("#EEEEEE");
+    // The point of the editor: it lets you do it, and then says so.
+    expect(await screen.findByText(/below the bar/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 token forced/i)).toBeInTheDocument();
+  });
+
+  test("resetting an override puts the derived value back", async () => {
+    const user = userEvent.setup();
+    foundations();
+    const input = overrideInput("--text-1");
+    const theme = document.querySelector(".ds-theme");
+    const derived = theme.style.getPropertyValue("--text-1");
+
+    fireEvent.input(input, { target: { value: "#eeeeee" } });
+    expect(theme.style.getPropertyValue("--text-1")).toBe("#EEEEEE");
+
+    await user.click(screen.getByRole("button", { name: /reset all overrides/i }));
+    expect(theme.style.getPropertyValue("--text-1")).toBe(derived);
+    expect(screen.getByText(/nothing overridden/i)).toBeInTheDocument();
+  });
+
+  test("offers label colours for the brand surface, strongest first", () => {
+    foundations();
+    const group = screen.getByRole("group", { name: /suggested text on brand colors/i });
+    const chips = within(group).getAllByRole("button");
+    expect(chips.length).toBeGreaterThan(2);
+    // White is the best contrast on the default rosewood, so it leads.
+    expect(chips[0].textContent).toMatch(/white/i);
+    for (const chip of chips) {
+      expect(chip.textContent).toMatch(/\d+\.\d+:1/);
+    }
+  });
+
+  test("picking a label colour changes the button ink, not the body text", async () => {
+    const user = userEvent.setup();
+    foundations();
+    const theme = document.querySelector(".ds-theme");
+    const bodyBefore = theme.style.getPropertyValue("--text-1");
+
+    const group = screen.getByRole("group", { name: /suggested text on brand colors/i });
+    await user.click(within(group).getByRole("button", { name: /slate/i }));
+
+    expect(theme.style.getPropertyValue("--accent-on-fill")).not.toBe("#FFFFFF");
+    expect(theme.style.getPropertyValue("--text-1")).toBe(bodyBefore);
+  });
+
+  test("a label colour that cannot work on the brand surface is snapped", () => {
+    foundations();
+    const theme = document.querySelector(".ds-theme");
+    const fill = theme.style.getPropertyValue("--accent-fill");
+    // Mid grey on the rosewood fill is nowhere near 4.5:1.
+    fireEvent.input(document.getElementById("ds-oncolor"), { target: { value: "#8a8a8a" } });
+
+    const ink = theme.style.getPropertyValue("--accent-on-fill");
+    expect(ink.toUpperCase()).not.toBe("#8A8A8A");
+    expect(contrast(hexToRgb(ink), hexToRgb(fill))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("the border row is judged at 3:1, not 4.5:1", () => {
+    foundations();
+    // --border is a non-text boundary (1.4.11). Holding it to 4.5 would flag a
+    // compliant border as a failure.
+    const row = screen.getByText("--border-interactive").closest(".ds-ovr-row");
+    expect(within(row).getByText(/non-text boundary/i)).toBeInTheDocument();
+    expect(within(row).getByText("PASS")).toBeInTheDocument();
+  });
+});
+
+describe("Text colour - suggestions and the derived pair", () => {
+  const LIGHT = "#FCF8F5", DARK = "#1B1618";
+
+  test("every suggestion clears AAA on a background that can support it", () => {
+    for (const bg of [LIGHT, DARK, "#FFFFFF", "#000000"]) {
+      const out = suggestTextColors(bg);
+      expect(out.length).toBeGreaterThan(0);
+      for (const { hex, ratio, meets } of out) {
+        const measured = contrast(hexToRgb(hex), hexToRgb(bg));
+        // The reported ratio has to be the real one, not a number next to a
+        // swatch - the guide prints it as a fact about the colour.
+        expect(measured, `${hex} on ${bg} reported`).toBeCloseTo(ratio, 5);
+        expect(measured, `${hex} on ${bg}`).toBeGreaterThanOrEqual(7);
+        expect(meets, `${hex} on ${bg} meets`).toBe(true);
+      }
+    }
+  });
+
+  test("a background that cannot reach AAA is reported, not papered over", () => {
+    // Mid grey caps out around 5.2:1 against black - AAA is unreachable here
+    // for any text colour, so every suggestion has to say so.
+    const out = suggestTextColors("#7A7A7A");
+    expect(out.length).toBeGreaterThan(0);
+    for (const { hex, ratio, meets } of out) {
+      expect(contrast(hexToRgb(hex), hexToRgb("#7A7A7A")), `${hex} reported`)
+        .toBeCloseTo(ratio, 5);
+      expect(meets, `${hex} meets`).toBe(false);
+    }
+  });
+
+  test("suggestions are rich, not parked on the 7:1 floor", () => {
+    // Starting the search mid-range returned washed-out mid-tones that passed
+    // by a hair. Every suggestion should clear the bar with real room.
+    const out = suggestTextColors(LIGHT, { accentHex: "#9E4A4E" });
+    for (const { hex, ratio } of out) {
+      expect(ratio, `${hex} headroom`).toBeGreaterThan(7.1);
+    }
+  });
+
+  test("no duplicate swatches", () => {
+    for (const bg of [LIGHT, DARK, "#FFFFFF", "#808080"]) {
+      const hexes = suggestTextColors(bg).map((x) => x.hex);
+      expect(new Set(hexes).size, `${bg} duplicates`).toBe(hexes.length);
+    }
+  });
+
+  test("the brand suggestion follows the accent hue", () => {
+    const green = suggestTextColors(LIGHT, { accentHex: "#2E6F5E" })
+      .find((x) => x.label === "Brand");
+    const [r, g, b] = hexToRgb(green.hex);
+    expect(g).toBeGreaterThan(r);
+    expect(g).toBeGreaterThan(b);
+  });
+
+  test("a text colour that already passes is left where it is", () => {
+    const pair = deriveTextPair("#2A2320", LIGHT);
+    expect(pair["--text-1"]).toBe("#2A2320");
+  });
+
+  test("a text colour that fails is moved the shortest distance that passes", () => {
+    // Pale grey on a near-white page: unreadable taken literally.
+    const pair = deriveTextPair("#DDDDDD", LIGHT);
+    expect(pair["--text-1"]).not.toBe("#DDDDDD");
+    expect(contrast(hexToRgb(pair["--text-1"]), hexToRgb(LIGHT))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("the muted partner still clears AA", () => {
+    for (const bg of [LIGHT, DARK]) {
+      for (const pick of ["#2A2320", "#2E6F5E", "#DDDDDD", "#000000", "#FFFFFF"]) {
+        const pair = deriveTextPair(pick, bg);
+        expect(contrast(hexToRgb(pair["--text-2"]), hexToRgb(bg)),
+          `${pick} on ${bg} secondary`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  test("the muted partner is recessive, not a second primary", () => {
+    // It should sit closer to the background than --text-1 does.
+    const pair = deriveTextPair("#2A2320", LIGHT);
+    const bg = hexToRgb(LIGHT);
+    expect(contrast(hexToRgb(pair["--text-2"]), bg))
+      .toBeLessThan(contrast(hexToRgb(pair["--text-1"]), bg));
+  });
+
+  test("every hue survives as a text colour, in both modes", () => {
+    for (const bg of [LIGHT, DARK]) {
+      for (const pick of ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"]) {
+        const pair = deriveTextPair(pick, bg);
+        expect(contrast(hexToRgb(pair["--text-1"]), hexToRgb(bg)),
+          `${pick} on ${bg}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+});
+
+describe("Brand-coloured shapes never carry a hardcoded ink", () => {
+  /*
+    The regression this guards: the checkmark, the indeterminate dash and the
+    switch knob were literal #fff sitting on --accent-fill. That was safe only
+    while the fill was forced above 4.5:1 against white. Once the fill became
+    the brand colour as picked, a pale brand made all three invisible at 1.25:1.
+    A source-level assertion because the bug lives in the stylesheet, not the DOM.
+  */
+  test("no literal white is painted on a brand-coloured surface", () => {
+    for (const [name, css] of [
+      ["SelectionControls", SEL_CSS],
+      ["Slider", SLIDER_CSS],
+      ["Tabs", TABS_CSS],
+    ]) {
+      expect(css, `${name} hardcodes white`).not.toMatch(/#fff\b/i);
+      expect(css, `${name} hardcodes white`).not.toMatch(/#ffffff/i);
+    }
+  });
+
+  test("the selection glyphs read from the marker ink token", () => {
+    expect(SEL_CSS).toContain("var(--accent-on-marker)");
+    // The shapes themselves are markers, not fills - a fill here would be the
+    // bug coming back the other way round.
+    expect(SEL_CSS).toContain("var(--accent-marker)");
+    expect(SEL_CSS).not.toContain("var(--accent-fill)");
+  });
+});
+
+describe("buildTheme - the marker, for brand colour used as a bare shape", () => {
+  // --surface is the lighter page colour in both modes, so it is the harder
+  // partner; a marker that clears it clears --bg for free.
+  const surfaceOf = (mode) => (mode === "dark" ? "#251F21" : "#FFFFFF");
+
+  const HUES = Array.from({ length: 24 }, (_, i) => {
+    const h = i * 15;
+    const c = 0.7, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = 0.5 - c / 2;
+    const t = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][Math.floor(h / 60) % 6];
+    return "#" + t.map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join("");
+  });
+
+  test("the marker clears 3:1 on the surface, for every hue and every grey", () => {
+    const greys = Array.from({ length: 256 }, (_, i) =>
+      "#" + [i, i, i].map((x) => x.toString(16).padStart(2, "0")).join(""));
+    for (const mode of ["light", "dark"]) {
+      const surface = hexToRgb(surfaceOf(mode));
+      for (const accent of [...HUES, ...greys]) {
+        const { vars } = buildTheme({ accent, mode });
+        expect(contrast(hexToRgb(vars["--accent-marker"]), surface),
+          `${accent} ${mode} marker`).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+
+  test("a glyph on the marker clears it, so the checkmark is never invisible", () => {
+    for (const mode of ["light", "dark"]) {
+      for (const accent of [...HUES, "#FFE81A", "#FFFFFF", "#000000", "#B9E4F0"]) {
+        const { vars } = buildTheme({ accent, mode });
+        expect(contrast(hexToRgb(vars["--accent-marker"]), hexToRgb(vars["--accent-on-marker"])),
+          `${accent} ${mode} glyph`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  test("a colour that already reads as a shape is not lifted at all", () => {
+    // The common case, and the point of splitting the token rather than
+    // adjusting everything: most brand colours come back untouched.
+    for (const accent of ["#8D2A2F", "#9E4A4E", "#2E6F5E", "#1D4ED8", "#000000"]) {
+      const { vars } = buildTheme({ accent });
+      expect(vars["--accent-marker"], `${accent}`).toBe(accent.toUpperCase());
+      expect(vars["--accent-marker"]).toBe(vars["--accent-fill"]);
+    }
+  });
+
+  test("a colour too pale to read as a shape is lifted, and only the shape moves", () => {
+    // Pale yellow: fine as a button (dark ink on it), invisible as a 2px rule.
+    const { vars } = buildTheme({ accent: "#FFE81A" });
+    expect(vars["--accent-fill"]).toBe("#FFE81A");        // the button is untouched
+    expect(vars["--accent-marker"]).not.toBe("#FFE81A");  // the tab underline is not
+    expect(contrast(hexToRgb(vars["--accent-marker"]), hexToRgb("#FFFFFF")))
+      .toBeGreaterThanOrEqual(3);
+  });
+
+  test("the lift is minimal - it stops at 3:1 rather than going dark", () => {
+    for (const accent of ["#FFE81A", "#B9E4F0", "#F5C0C0", "#FFFFFF"]) {
+      const r = contrast(hexToRgb(buildTheme({ accent }).vars["--accent-marker"]), hexToRgb("#FFFFFF"));
+      expect(r, `${accent} headroom`).toBeGreaterThanOrEqual(3);
+      expect(r, `${accent} overshoot`).toBeLessThan(3.6);
+    }
+  });
+
+  test("the accent badge follows a custom brand colour", () => {
+    const { vars } = buildTheme({ accent: "#2E6F5E" });
+    expect(vars["--bd-accent-lb"]).toBe(vars["--accent-fill"]);
+    expect(vars["--bd-accent-lf"]).toBe(vars["--accent-on-fill"]);
+    expect(contrast(hexToRgb(vars["--bd-accent-lb"]), hexToRgb(vars["--bd-accent-lf"])))
+      .toBeGreaterThanOrEqual(4.5);
+    // ...and the semantic tones do not move with it.
+    expect(vars["--bd-success-lb"]).toBe(buildTheme().vars["--bd-success-lb"]);
+  });
+
+  test("without a custom brand colour the preset badge table is untouched", () => {
+    expect(buildTheme().vars["--bd-accent-lb"]).toBe("#9E4A4E");
+  });
+});
+
+describe("buildTheme - textColor and manual overrides", () => {
+  test("textColor drives the text pair and holds AA", () => {
+    const { vars } = buildTheme({ textColor: "#2E6F5E" });
+    expect(vars["--text-1"]).not.toBe("#2A2320"); // not the preset any more
+    expect(contrast(hexToRgb(vars["--text-1"]), hexToRgb(vars["--bg"]))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(hexToRgb(vars["--text-2"]), hexToRgb(vars["--bg"]))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("an unusable text colour is snapped rather than accepted", () => {
+    const { vars } = buildTheme({ textColor: "#F2F2F2" });
+    expect(contrast(hexToRgb(vars["--text-1"]), hexToRgb(vars["--bg"]))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("textColor and accent compose without fighting", () => {
+    const { vars } = buildTheme({ accent: "#2E6F5E", textColor: "#3B2A55" });
+    const bg = hexToRgb(vars["--bg"]);
+    expect(contrast(hexToRgb(vars["--accent-fill"]), [255, 255, 255])).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(hexToRgb(vars["--text-1"]), bg)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("overrides are applied raw - that is the point of them", () => {
+    const { vars } = buildTheme({ overrides: { "--accent-fill": "#FF0000" } });
+    expect(vars["--accent-fill"]).toBe("#FF0000");
+  });
+
+  test("an override beats a derivation it collides with", () => {
+    const { vars } = buildTheme({
+      accent: "#2E6F5E",
+      textColor: "#333333",
+      overrides: { "--accent-fill": "#123456", "--text-1": "#654321" },
+    });
+    expect(vars["--accent-fill"]).toBe("#123456");
+    expect(vars["--text-1"]).toBe("#654321");
+  });
+
+  test("an override beats an explicitly-set non-palette var", () => {
+    // --radius has its own entry in vars, written after the token spread.
+    const { vars } = buildTheme({ radius: "10px", overrides: { "--radius": "0px" } });
+    expect(vars["--radius"]).toBe("0px");
+  });
+
+  test("overrides show up in tokens too, so readouts do not lie", () => {
+    const { tokens } = buildTheme({ overrides: { "--text-1": "#FF0000" } });
+    expect(tokens["--text-1"]).toBe("#FF0000");
+  });
+
+  test("no overrides leaves the theme exactly as it was", () => {
+    const plain = buildTheme({ accent: "#2E6F5E" });
+    const empty = buildTheme({ accent: "#2E6F5E", overrides: {} });
+    expect(empty.vars).toEqual(plain.vars);
+  });
+});
+
 describe("buildTheme - the pure token assembly", () => {
   test("emits the full variable set the components read", () => {
     const { vars } = buildTheme();
@@ -1223,23 +1600,44 @@ describe("buildTheme - the pure token assembly", () => {
     expect(dark.vars["--al-info-bg"]).not.toBe(light.vars["--al-info-bg"]);
   });
 
-  test("a brand colour is snapped to accessible shades, not used raw", () => {
-    // Pale yellow: unusable as a fill against white if taken literally.
+  test("the brand colour is used exactly as picked, and the label adapts to it", () => {
+    // Pale yellow. White text on it is 1.25:1, so the old derivation darkened
+    // the fill to an olive; now the fill stands and the ink goes dark instead.
     const { vars } = buildTheme({ accent: "#FFE81A" });
-    expect(vars["--accent-fill"]).not.toBe("#FFE81A");
+    expect(vars["--accent-fill"]).toBe("#FFE81A");
 
-    const white = [255, 255, 255];
     const fill = hexToRgb(vars["--accent-fill"]);
-    expect(contrast(white, fill)).toBeGreaterThanOrEqual(4.5);
+    const ink = hexToRgb(vars["--accent-on-fill"]);
+    expect(vars["--accent-on-fill"]).not.toBe("#FFFFFF");
+    expect(contrast(fill, ink)).toBeGreaterThanOrEqual(4.5);
 
+    // --accent-text sits on the page, not on the fill, so it is still derived.
     const text = hexToRgb(vars["--accent-text"]);
     const bg = hexToRgb(vars["--bg"]);
     expect(contrast(text, bg)).toBeGreaterThanOrEqual(4.5);
   });
 
+  test("a colour that already passes is never derived into a worse one", () => {
+    // The regression this rule exists for: #8D2A2F went in at 8.4:1 against
+    // white and came back at 4.6:1, a downgrade dressed up as a safety check.
+    for (const accent of ["#8D2A2F", "#2E6F5E", "#1D4ED8", "#6E3236", "#000000"]) {
+      const { vars } = buildTheme({ accent });
+      expect(vars["--accent-fill"], `${accent} fill`).toBe(accent.toUpperCase());
+
+      const picked = hexToRgb(accent);
+      const bg = hexToRgb(vars["--bg"]);
+      // Same for the on-page text token: if the pick clears the bar there, it
+      // is kept rather than walked to something weaker.
+      if (contrast(picked, bg) >= 4.5) {
+        expect(vars["--accent-text"], `${accent} text`).toBe(accent.toUpperCase());
+      }
+    }
+  });
+
   test("the same guarantee holds in dark mode", () => {
     const { vars } = buildTheme({ accent: "#FFE81A", mode: "dark" });
-    expect(contrast([255, 255, 255], hexToRgb(vars["--accent-fill"]))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(hexToRgb(vars["--accent-fill"]), hexToRgb(vars["--accent-on-fill"])))
+      .toBeGreaterThanOrEqual(4.5);
     expect(contrast(hexToRgb(vars["--accent-text"]), hexToRgb(vars["--bg"]))).toBeGreaterThanOrEqual(4.5);
   });
 
@@ -1261,8 +1659,17 @@ describe("buildTheme - the pure token assembly", () => {
       for (const accent of inputs) {
         const { vars } = buildTheme({ accent, mode });
         const bg = hexToRgb(vars["--bg"]);
-        expect(contrast([255, 255, 255], hexToRgb(vars["--accent-fill"])),
-          `${accent} ${mode} fill`).toBeGreaterThanOrEqual(4.5);
+        const ink = hexToRgb(vars["--accent-on-fill"]);
+
+        // The fill is whatever was picked; the label is what has to clear it.
+        expect(vars["--accent-fill"], `${accent} ${mode} kept`).toBe(accent.toUpperCase());
+        expect(contrast(hexToRgb(vars["--accent-fill"]), ink),
+          `${accent} ${mode} fill/ink`).toBeGreaterThanOrEqual(4.5);
+        // Hover and active move the fill, so they have to clear it too.
+        expect(contrast(hexToRgb(vars["--accent-fill-hover"]), ink),
+          `${accent} ${mode} hover/ink`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(hexToRgb(vars["--accent-fill-active"]), ink),
+          `${accent} ${mode} active/ink`).toBeGreaterThanOrEqual(4.5);
         expect(contrast(hexToRgb(vars["--accent-text"]), bg),
           `${accent} ${mode} text`).toBeGreaterThanOrEqual(4.5);
         expect(contrast(hexToRgb(vars["--accent-on-tint"]), hexToRgb(vars["--accent-tint"])),
@@ -1286,11 +1693,28 @@ describe("buildTheme - the pure token assembly", () => {
     }
   });
 
-  test("neutrals land on a mid grey rather than pure black", () => {
-    const { vars } = buildTheme({ accent: "#000000" });
-    const [r] = hexToRgb(vars["--accent-fill"]);
-    expect(r).toBeGreaterThan(0x60);
-    expect(r).toBeLessThan(0x90);
+  test("an extreme neutral is kept, with the ink flipping to suit it", () => {
+    // Black used to be lifted to a mid grey so white text would fit. Picking
+    // black now gets you black, with white on it - which is what was asked for.
+    const black = buildTheme({ accent: "#000000" });
+    expect(black.vars["--accent-fill"]).toBe("#000000");
+    expect(black.vars["--accent-on-fill"]).toBe("#FFFFFF");
+
+    const white = buildTheme({ accent: "#FFFFFF" });
+    expect(white.vars["--accent-fill"]).toBe("#FFFFFF");
+    expect(contrast(hexToRgb("#FFFFFF"), hexToRgb(white.vars["--accent-on-fill"])))
+      .toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("no colour exists that both inks fail on", () => {
+    // The claim the "fill never moves" rule rests on: white fails only above
+    // 0.1833 relative luminance, black only below 0.175, so one always works.
+    for (let i = 0; i <= 255; i += 1) {
+      const hex = "#" + [i, i, i].map((x) => x.toString(16).padStart(2, "0")).join("");
+      const { vars } = buildTheme({ accent: hex });
+      expect(contrast(hexToRgb(vars["--accent-fill"]), hexToRgb(vars["--accent-on-fill"])),
+        `${hex} ink`).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   test("a near-neutral with real warmth keeps its hue", () => {

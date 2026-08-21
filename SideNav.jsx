@@ -73,5 +73,5 @@ export const SIDENAV_CSS = `
 /* Leading-edge indicator, the vertical counterpart of the navbar's underline. */
 .ds-sidenav-list .ds-navitem.current{background:var(--accent-tint)}
 .ds-sidenav-list .ds-navitem.current::after{content:"";position:absolute;
-  left:0;top:7px;bottom:7px;width:2px;border-radius:0 2px 2px 0;background:var(--accent-fill)}
+  left:0;top:7px;bottom:7px;width:2px;border-radius:0 2px 2px 0;background:var(--accent-marker)}
 `;
